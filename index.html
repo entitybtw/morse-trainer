@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер Морзе</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Тренажер Азбуки Морзе</h1>
+            <p class="subtitle">Режим клавиатуры: вводите буквы на клавише</p>
+        </header>
+      
+
+        <div class="main-content">
+            <div class="panel controls">
+                <div class="control-group">
+                    <label for="layout-select">Раскладка:</label>
+                    <select id="layout-select">
+                        <option value="en">Английская</option>
+                        <option value="ru">Русская</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="rounds-select">Количество букв:</label>
+                    <select id="rounds-select">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button id="start-btn" class="start-btn">▶️ Начать</button>
+            </div>
+            <div class="panel mode-selector">
+                <h3>Режим тренировки</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="keyboard">
+                        ⌨️ Клавиатура
+                    </button>
+                    <button class="mode-btn" data-mode="morse">
+                        ••--- Морзе
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel training-area">
+                <div class="target-section">
+                    <div class="label">Целевая буква:</div>
+                    <div id="target-char" class="target-char">—</div>
+                    <div class="hint" id="hint">Нажмите соответствующую клавишу</div>
+                </div>
+
+                <div class="input-section" id="keyboard-input">
+                    <div class="input-status">
+                        <div class="status-label">Ваш ввод:</div>
+                        <div id="typed-char" class="typed-char">—</div>
+                    </div>
+                    <div class="keyboard-hint">
+                        Нажмите клавишу на клавиатуре
+                    </div>
+                </div>
+
+                <div class="input-section" id="morse-input" style="display: none;">
+                    <input type="text" id="morse-text" placeholder="Вводите точки (.) и тире (-)...">
+                    <div class="morse-buttons">
+                        <button class="btn dot" data-char=".">•</button>
+                        <button class="btn dash" data-char="-">—</button>
+                        <button class="btn clear" id="clear-btn">⌫</button>
+                    </div>
+                </div>
+
+                <div class="feedback" id="feedback">
+                    Начните тренировку
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">Прогресс</div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-round">0</span>/<span id="total-rounds">10</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="correct-count">0</div>
+                        <div class="stat-label">Правильно</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="error-count">0</div>
+                        <div class="stat-label">Ошибки</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="streak-count">0</div>
+                        <div class="stat-label">Серия</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="accuracy">0%</div>
+                        <div class="stat-label">Точность</div>
+                    </div>
+                </div>
+            </div> 
+              
+            <div class="panel reference">
+                <div class="ref-header">
+                    <h3>Шпаргалка</h3>
+                    <button id="toggle-ref" class="ref-btn">Показать</button>
+                </div>
+                <div id="ref-content" class="ref-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
