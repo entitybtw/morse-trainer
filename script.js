@@ -20,7 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
         clearBtn: document.getElementById('clear-btn'),
         toggleRef: document.getElementById('toggle-ref'),
         refContent: document.getElementById('ref-content'),
-        modeButtons: document.querySelectorAll('.mode-btn')
+        modeButtons: document.querySelectorAll('.mode-btn'),
+        clearRecordsBtn: document.getElementById('clear-records-btn'),
+        keyboardRecords: document.getElementById('keyboard-records'),
+        morseRecords: document.getElementById('morse-records'),
+        recordTabs: document.querySelectorAll('.record-tab')
     };
 
     let currentMode = 'keyboard';
@@ -38,7 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
         streak: 0,
         bestStreak: 0,
         sequence: [],
-        started: false
+        started: false,
+        startTime: null,
+        endTime: null
+    };
+
+    let records = {
+        keyboard: [],
+        morse: []
     };
 
     const keyMaps = {
@@ -82,8 +93,82 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function init() {
+        loadRecords();
         updateReference();
         setupEventListeners();
+        updateRecordsDisplay();
+    }
+
+    function loadRecords() {
+        const saved = localStorage.getItem('morseTrainerRecords');
+        if (saved) {
+            records = JSON.parse(saved);
+        }
+    }
+
+    function saveRecords() {
+        localStorage.setItem('morseTrainerRecords', JSON.stringify(records));
+    }
+
+    function updateRecordsDisplay() {
+        updateRecordsList('keyboard');
+        updateRecordsList('morse');
+    }
+
+    function updateRecordsList(mode) {
+        const listElement = mode === 'keyboard' ? elements.keyboardRecords : elements.morseRecords;
+        const modeRecords = records[mode];
+        
+        if (!modeRecords || modeRecords.length === 0) {
+            listElement.innerHTML = `
+                <div class="no-records">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+                    </svg>
+                    <p>Пока нет рекордов</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Пройдите тренировку, чтобы установить рекорд!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        modeRecords.forEach((record, index) => {
+            const isCurrent = record.id === trainingData.currentRecordId;
+            const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+            
+            html += `
+                <div class="record-item ${isCurrent ? 'current' : ''}">
+                    <div class="record-rank ${rankClass}">${index + 1}</div>
+                    <div class="record-info">
+                        <div style="font-weight: 600; color: var(--text);">
+                            ${record.mode === 'keyboard' ? '⌨️ Клавиатура' : '••--- Морзе'} • ${record.layout === 'ru' ? 'Русская' : 'Английская'}
+                        </div>
+                        <div class="record-date">${formatDate(record.date)}</div>
+                    </div>
+                    <div class="record-score">
+                        <div class="record-accuracy">${record.accuracy}%</div>
+                        <div class="record-details">
+                            <span>${record.correct}</span> из <span>${record.total}</span>
+                            ${record.time ? ` • ${record.time}с` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        listElement.innerHTML = html;
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     function updateReference() {
@@ -130,11 +215,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+        elements.recordTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                elements.recordTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const mode = tab.dataset.mode;
+                elements.keyboardRecords.style.display = mode === 'keyboard' ? 'block' : 'none';
+                elements.morseRecords.style.display = mode === 'morse' ? 'block' : 'none';
+            });
+        });
+
         elements.startBtn.addEventListener('click', () => {
             if (!trainingData.started) {
                 startTraining();
             } else {
                 restartTraining();
+            }
+        });
+
+        elements.clearRecordsBtn.addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите очистить все рекорды? Это действие нельзя отменить.')) {
+                records = { keyboard: [], morse: [] };
+                saveRecords();
+                updateRecordsDisplay();
             }
         });
 
@@ -310,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingData.started = true;
         currentLayout = elements.layoutSelect.value;
         trainingData.totalRounds = parseInt(elements.roundsSelect.value);
+        trainingData.startTime = new Date();
         
         generateSequence();
         
@@ -389,12 +494,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function finishTraining() {
         trainingActive = false;
+        trainingData.endTime = new Date();
+        const timeDiff = (trainingData.endTime - trainingData.startTime) / 1000;
         const accuracy = Math.round((trainingData.correct / trainingData.totalRounds) * 100);
         
-        elements.feedback.textContent = `Тренировка завершена! Точность: ${accuracy}%`;
+        elements.feedback.textContent = `Тренировка завершена! Точность: ${accuracy}% • Время: ${timeDiff.toFixed(1)}с`;
         elements.feedback.className = 'feedback';
         
         elements.hint.textContent = `Нажмите "Перезапустить" чтобы начать заново`;
+        
+        saveRecord(accuracy, timeDiff);
+    }
+
+    function saveRecord(accuracy, time) {
+        const record = {
+            id: Date.now(),
+            mode: currentMode,
+            layout: currentLayout,
+            date: new Date().toISOString(),
+            correct: trainingData.correct,
+            total: trainingData.totalRounds,
+            accuracy: accuracy,
+            time: time.toFixed(1),
+            bestStreak: trainingData.bestStreak
+        };
+        
+        records[currentMode].push(record);
+        
+        records[currentMode].sort((a, b) => {
+            if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
+            return a.time - b.time;
+        });
+        
+        records[currentMode] = records[currentMode].slice(0, 10);
+        
+        trainingData.currentRecordId = record.id;
+        
+        saveRecords();
+        updateRecordsDisplay();
     }
 
     function updateProgress() {

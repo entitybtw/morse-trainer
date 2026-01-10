@@ -13,7 +13,6 @@
             <p class="subtitle">Режим клавиатуры: вводите буквы на клавише</p>
         </header>
       
-
         <div class="main-content">
             <div class="panel controls">
                 <div class="control-group">
@@ -34,6 +33,7 @@
                 </div>
                 <button id="start-btn" class="start-btn">▶️ Начать</button>
             </div>
+            
             <div class="panel mode-selector">
                 <h3>Режим тренировки</h3>
                 <div class="mode-buttons">
@@ -106,7 +106,24 @@
                         <div class="stat-label">Точность</div>
                     </div>
                 </div>
-            </div> 
+            </div>
+            
+            <div class="panel records-section">
+                <div class="records-header">
+                    <h3>🏆 Таблица рекордов</h3>
+                    <button id="clear-records-btn" class="clear-btn">Очистить</button>
+                </div>
+                <div class="records-content">
+                    <div class="records-tabs">
+                        <button class="record-tab active" data-mode="keyboard">Клавиатура</button>
+                        <button class="record-tab" data-mode="morse">Морзе</button>
+                    </div>
+                    <div id="keyboard-records" class="records-list">
+                    </div>
+                    <div id="morse-records" class="records-list" style="display: none;">
+                    </div>
+                </div>
+            </div>
               
             <div class="panel reference">
                 <div class="ref-header">

@@ -1,13 +1,17 @@
 :root {
-    --bg: #0f1115;
-    --panel: #161a22;
-    --text: #e6e6eb;
-    --muted: #9aa0aa;
-    --accent: #7c7cff;
-    --border: #232837;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #3b82f6;
+    --border: #e2e8f0;
     --success: #10b981;
     --error: #ef4444;
     --warning: #f59e0b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --accent-light: #dbeafe;
+    --success-light: #d1fae5;
+    --error-light: #fee2e2;
 }
 
 * {
@@ -22,10 +26,11 @@ body {
     color: var(--text);
     min-height: 100vh;
     padding: 20px;
+    line-height: 1.5;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -40,7 +45,7 @@ h1 {
     font-size: 32px;
     font-weight: 800;
     margin-bottom: 8px;
-    color: var(--text);
+    color: var(--accent);
 }
 
 .subtitle {
@@ -60,6 +65,7 @@ h1 {
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 24px;
+    box-shadow: var(--shadow);
 }
 
 .mode-selector h3 {
@@ -78,7 +84,7 @@ h1 {
     flex: 1;
     padding: 14px;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 10px;
     color: var(--muted);
     font-size: 16px;
@@ -93,7 +99,8 @@ h1 {
 
 .mode-btn:hover {
     border-color: var(--accent);
-    color: var(--text);
+    color: var(--accent);
+    background: var(--accent-light);
 }
 
 .mode-btn.active {
@@ -118,6 +125,7 @@ h1 {
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-weight: 600;
 }
 
 .target-char {
@@ -126,18 +134,19 @@ h1 {
     color: var(--accent);
     margin: 10px 0;
     line-height: 1;
-    text-shadow: 0 0 20px rgba(124, 124, 255, 0.3);
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
 }
 
 .hint {
     font-size: 14px;
     color: var(--muted);
     margin-top: 8px;
+    font-weight: 500;
 }
 
 .input-section {
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 12px;
     padding: 20px;
 }
@@ -151,6 +160,7 @@ h1 {
     font-size: 14px;
     color: var(--muted);
     margin-bottom: 8px;
+    font-weight: 600;
 }
 
 .typed-char {
@@ -166,11 +176,12 @@ h1 {
 .keyboard-hint {
     text-align: center;
     padding: 16px;
-    background: rgba(124, 124, 255, 0.1);
+    background: var(--accent-light);
     border-radius: 8px;
     color: var(--accent);
     font-size: 15px;
-    border: 1px solid rgba(124, 124, 255, 0.2);
+    border: 1px solid var(--accent);
+    font-weight: 500;
 }
 
 #morse-text {
@@ -185,10 +196,12 @@ h1 {
     text-align: center;
     margin-bottom: 16px;
     outline: none;
+    transition: border-color 0.2s;
 }
 
 #morse-text:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .morse-buttons {
@@ -207,35 +220,35 @@ h1 {
     transition: all 0.2s;
     background: var(--bg);
     color: var(--text);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow);
 }
 
 .btn.dot {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--success-light);
     border-color: var(--success);
     color: var(--success);
 }
 
 .btn.dash {
-    background: rgba(124, 124, 255, 0.1);
+    background: var(--accent-light);
     border-color: var(--accent);
     color: var(--accent);
 }
 
 .btn.clear {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--error-light);
     border-color: var(--error);
     color: var(--error);
 }
 
 .feedback {
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
@@ -245,16 +258,17 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: 500;
 }
 
 .feedback.correct {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--success-light);
     border-color: var(--success);
     color: var(--success);
 }
 
 .feedback.error {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--error-light);
     border-color: var(--error);
     color: var(--error);
 }
@@ -269,6 +283,7 @@ h1 {
     margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
+    font-weight: 600;
 }
 
 .progress-bar {
@@ -277,11 +292,12 @@ h1 {
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 12px;
+    border: 1px solid var(--border);
 }
 
 .progress-fill {
     height: 100%;
-    background: var(--accent);
+    background: linear-gradient(90deg, var(--accent), #60a5fa);
     border-radius: 4px;
     width: 0%;
     transition: width 0.5s ease;
@@ -291,6 +307,7 @@ h1 {
     font-size: 14px;
     color: var(--muted);
     text-align: center;
+    font-weight: 600;
 }
 
 .stats-grid {
@@ -301,10 +318,16 @@ h1 {
 
 .stat-card {
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 10px;
     padding: 20px;
     text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 .stat-value {
@@ -320,6 +343,7 @@ h1 {
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-weight: 600;
 }
 
 .controls {
@@ -339,23 +363,26 @@ h1 {
     font-size: 14px;
     color: var(--muted);
     margin-bottom: 8px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 select {
     width: 100%;
     padding: 12px;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 8px;
     color: var(--text);
     font-size: 14px;
     outline: none;
     cursor: pointer;
+    font-weight: 500;
+    transition: border-color 0.2s;
 }
 
 select:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .start-btn {
@@ -369,11 +396,13 @@ select:focus {
     cursor: pointer;
     transition: all 0.2s;
     min-width: 140px;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
 }
 
 .start-btn:hover {
-    opacity: 0.9;
+    background: #2563eb;
     transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(59, 130, 246, 0.3);
 }
 
 .ref-header {
@@ -392,21 +421,23 @@ select:focus {
 .ref-btn {
     padding: 8px 16px;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 8px;
     color: var(--text);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: 500;
 }
 
 .ref-btn:hover {
     border-color: var(--accent);
+    background: var(--accent-light);
 }
 
 .ref-content {
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 10px;
     padding: 20px;
     max-height: 300px;
@@ -425,8 +456,8 @@ select:focus {
 }
 
 .ref-item {
-    background: rgba(124, 124, 255, 0.05);
-    border: 1px solid var(--border);
+    background: var(--accent-light);
+    border: 2px solid var(--border);
     border-radius: 8px;
     padding: 12px 8px;
     text-align: center;
@@ -436,6 +467,7 @@ select:focus {
 .ref-item:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 .ref-char {
@@ -449,6 +481,171 @@ select:focus {
     font-family: monospace;
     font-size: 12px;
     color: var(--muted);
+    font-weight: 500;
+}
+
+.records-section {
+    margin-top: 10px;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.records-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clear-btn {
+    padding: 8px 16px;
+    background: var(--error-light);
+    border: 2px solid var(--error);
+    border-radius: 8px;
+    color: var(--error);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.clear-btn:hover {
+    background: var(--error);
+    color: white;
+}
+
+.records-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.record-tab {
+    flex: 1;
+    padding: 12px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    text-align: center;
+}
+
+.record-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.record-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.records-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.record-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+
+.record-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+}
+
+.record-item.current {
+    background: var(--accent-light);
+    border-color: var(--accent);
+}
+
+.record-rank {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 40px;
+}
+
+.record-rank.gold {
+    color: #fbbf24;
+}
+
+.record-rank.silver {
+    color: #94a3b8;
+}
+
+.record-rank.bronze {
+    color: #f59e0b;
+}
+
+.record-info {
+    flex: 1;
+    padding: 0 16px;
+}
+
+.record-date {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.record-score {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.record-accuracy {
+    font-size: 14px;
+    color: var(--success);
+    font-weight: 600;
+    padding: 4px 12px;
+    background: var(--success-light);
+    border-radius: 20px;
+}
+
+.record-details {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.record-details span {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.no-records {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.no-records svg {
+    margin-bottom: 16px;
+    opacity: 0.5;
 }
 
 @media (max-width: 768px) {
@@ -489,6 +686,10 @@ select:focus {
     }
     
     .mode-buttons {
+        flex-direction: column;
+    }
+    
+    .records-tabs {
         flex-direction: column;
     }
 }
