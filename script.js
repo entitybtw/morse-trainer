@@ -1,695 +1,555 @@
-:root {
-    --bg: #f8fafc;
-    --panel: #ffffff;
-    --text: #1e293b;
-    --muted: #64748b;
-    --accent: #3b82f6;
-    --border: #e2e8f0;
-    --success: #10b981;
-    --error: #ef4444;
-    --warning: #f59e0b;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --accent-light: #dbeafe;
-    --success-light: #d1fae5;
-    --error-light: #fee2e2;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.5;
-}
-
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-}
-
-h1 {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: var(--accent);
-}
-
-.subtitle {
-    font-size: 16px;
-    color: var(--muted);
-    font-weight: 400;
-}
-
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-}
-
-.mode-selector h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: var(--text);
-}
-
-.mode-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-.mode-btn {
-    flex: 1;
-    padding: 14px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    color: var(--muted);
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.mode-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-light);
-}
-
-.mode-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-}
-
-.training-area {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.target-section {
-    text-align: center;
-}
-
-.label {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.target-char {
-    font-size: 72px;
-    font-weight: 800;
-    color: var(--accent);
-    margin: 10px 0;
-    line-height: 1;
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-}
-
-.hint {
-    font-size: 14px;
-    color: var(--muted);
-    margin-top: 8px;
-    font-weight: 500;
-}
-
-.input-section {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-}
-
-.input-status {
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.status-label {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.typed-char {
-    font-size: 48px;
-    font-weight: 600;
-    color: var(--text);
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.keyboard-hint {
-    text-align: center;
-    padding: 16px;
-    background: var(--accent-light);
-    border-radius: 8px;
-    color: var(--accent);
-    font-size: 15px;
-    border: 1px solid var(--accent);
-    font-weight: 500;
-}
-
-#morse-text {
-    width: 100%;
-    padding: 16px;
-    font-size: 24px;
-    font-family: monospace;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 16px;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-#morse-text:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.morse-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-.btn {
-    flex: 1;
-    padding: 16px;
-    font-size: 20px;
-    font-weight: 600;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--bg);
-    color: var(--text);
-    border: 2px solid var(--border);
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.btn.dot {
-    background: var(--success-light);
-    border-color: var(--success);
-    color: var(--success);
-}
-
-.btn.dash {
-    background: var(--accent-light);
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-.btn.clear {
-    background: var(--error-light);
-    border-color: var(--error);
-    color: var(--error);
-}
-
-.feedback {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    font-size: 16px;
-    color: var(--muted);
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-}
-
-.feedback.correct {
-    background: var(--success-light);
-    border-color: var(--success);
-    color: var(--success);
-}
-
-.feedback.error {
-    background: var(--error-light);
-    border-color: var(--error);
-    color: var(--error);
-}
-
-.progress-section {
-    margin-top: 8px;
-}
-
-.progress-label {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: 600;
-}
-
-.progress-bar {
-    height: 8px;
-    background: var(--bg);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    border: 1px solid var(--border);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), #60a5fa);
-    border-radius: 4px;
-    width: 0%;
-    transition: width 0.5s ease;
-}
-
-.progress-text {
-    font-size: 14px;
-    color: var(--muted);
-    text-align: center;
-    font-weight: 600;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-.stat-card {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.2s;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.stat-value {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 4px;
-    line-height: 1;
-}
-
-.stat-label {
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.controls {
-    display: flex;
-    gap: 20px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-}
-
-.control-group {
-    flex: 1;
-    min-width: 150px;
-}
-
-.control-group label {
-    display: block;
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-select {
-    width: 100%;
-    padding: 12px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: border-color 0.2s;
-}
-
-select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.start-btn {
-    padding: 14px 32px;
-    background: var(--accent);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 140px;
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
-}
-
-.start-btn:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(59, 130, 246, 0.3);
-}
-
-.ref-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.ref-header h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.ref-btn {
-    padding: 8px 16px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.ref-btn:hover {
-    border-color: var(--accent);
-    background: var(--accent-light);
-}
-
-.ref-content {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    max-height: 300px;
-    overflow-y: auto;
-    display: none;
-}
-
-.ref-content.visible {
-    display: block;
-}
-
-.ref-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 12px;
-}
-
-.ref-item {
-    background: var(--accent-light);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.2s;
-}
-
-.ref-item:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.ref-char {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 4px;
-}
-
-.ref-code {
-    font-family: monospace;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-}
-
-.records-section {
-    margin-top: 10px;
-}
-
-.records-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.records-header h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.clear-btn {
-    padding: 8px 16px;
-    background: var(--error-light);
-    border: 2px solid var(--error);
-    border-radius: 8px;
-    color: var(--error);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.clear-btn:hover {
-    background: var(--error);
-    color: white;
-}
-
-.records-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.record-tab {
-    flex: 1;
-    padding: 12px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-    text-align: center;
-}
-
-.record-tab:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-.record-tab.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-}
-
-.records-list {
-    max-height: 300px;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-.record-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    transition: all 0.2s;
-}
-
-.record-item:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow);
-}
-
-.record-item.current {
-    background: var(--accent-light);
-    border-color: var(--accent);
-}
-
-.record-rank {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--accent);
-    min-width: 40px;
-}
-
-.record-rank.gold {
-    color: #fbbf24;
-}
-
-.record-rank.silver {
-    color: #94a3b8;
-}
-
-.record-rank.bronze {
-    color: #f59e0b;
-}
-
-.record-info {
-    flex: 1;
-    padding: 0 16px;
-}
-
-.record-date {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-}
-
-.record-score {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-.record-accuracy {
-    font-size: 14px;
-    color: var(--success);
-    font-weight: 600;
-    padding: 4px 12px;
-    background: var(--success-light);
-    border-radius: 20px;
-}
-
-.record-details {
-    font-size: 14px;
-    color: var(--muted);
-    font-weight: 500;
-}
-
-.record-details span {
-    color: var(--accent);
-    font-weight: 600;
-}
-
-.no-records {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-    font-size: 16px;
-}
-
-.no-records svg {
-    margin-bottom: 16px;
-    opacity: 0.5;
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 16px;
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    const elements = {
+        targetChar: document.getElementById('target-char'),
+        typedChar: document.getElementById('typed-char'),
+        feedback: document.getElementById('feedback'),
+        hint: document.getElementById('hint'),
+        progressFill: document.getElementById('progress-fill'),
+        currentRound: document.getElementById('current-round'),
+        totalRounds: document.getElementById('total-rounds'),
+        correctCount: document.getElementById('correct-count'),
+        errorCount: document.getElementById('error-count'),
+        streakCount: document.getElementById('streak-count'),
+        accuracy: document.getElementById('accuracy'),
+        startBtn: document.getElementById('start-btn'),
+        layoutSelect: document.getElementById('layout-select'),
+        roundsSelect: document.getElementById('rounds-select'),
+        keyboardInput: document.getElementById('keyboard-input'),
+        morseInput: document.getElementById('morse-input'),
+        morseText: document.getElementById('morse-text'),
+        clearBtn: document.getElementById('clear-btn'),
+        toggleRef: document.getElementById('toggle-ref'),
+        refContent: document.getElementById('ref-content'),
+        modeButtons: document.querySelectorAll('.mode-btn'),
+        clearRecordsBtn: document.getElementById('clear-records-btn'),
+        keyboardRecords: document.getElementById('keyboard-records'),
+        morseRecords: document.getElementById('morse-records'),
+        recordTabs: document.querySelectorAll('.record-tab')
+    };
+
+    let currentMode = 'keyboard';
+    let currentLayout = 'en';
+    let trainingActive = false;
+    let currentKey = '';
+    let morseSymbol = '';
     
-    .container {
-        max-width: 100%;
+    let trainingData = {
+        targetChar: '',
+        currentRound: 0,
+        totalRounds: 10,
+        correct: 0,
+        errors: 0,
+        streak: 0,
+        bestStreak: 0,
+        sequence: [],
+        started: false,
+        startTime: null,
+        endTime: null
+    };
+
+    let records = {
+        keyboard: [],
+        morse: []
+    };
+
+    const keyMaps = {
+        en: {
+            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
+            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
+            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
+            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
+            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
+            'z': 'z'
+        },
+        ru: {
+            ".-": "а", "-...": "б", ".--": "в", "--.": "г", "-..": "д",
+            ".": "е", "...-": "ж", "--..": "з", "..": "и", ".---": "й",
+            "-.-": "к", ".-..": "л", "--": "м", "-.": "н", "---": "о",
+            ".--.": "п", "--.-": "р", ".-.": "с", "...": "т", "-": "у",
+            "..-": "ф", "..-.": "х", "....": "ц", "---.": "ч", "----": "ш",
+            "--.-": "щ", "--.--": "ъ", "-.--": "ы", ".-.-": "ь", "..-..": "э",
+            ".-.-.": "ю", "-----": "я"
+        }
+    };
+
+    const morseTables = {
+        en: {
+            ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
+            "..-.": "f", "--.": "g", "....": "h", "..": "i", ".---": "j",
+            "-.-": "k", ".-..": "l", "--": "m", "-.": "n", "---": "o",
+            ".--.": "p", "--.-": "q", ".-.": "r", "...": "s", "-": "t",
+            "..-": "u", "...-": "v", ".--": "w", "-..-": "x", "-.--": "y",
+            "--..": "z"
+        },
+        ru: {
+            ".-": "ф", "-...": "и", ".--": "в", "--.": "п", "-..": "л",
+            ".": "т", "...-": "щ", "--..": "р", "..": "ы", ".---": "ь",
+            "-.-": "о", ".-..": "д", "--": "м", "-.": "н", "---": "я",
+            ".--.": "г", ".-.": "ш", "...": "у", "-": "е", "..-": "а",
+            "..-.": "ж", "....": "х", "-.-.": "ц", "---.": "ч", "----": "б",
+            "--.-": "ю", "--.--": "с", "-.--": "ь", ".-.-": "ъ", "..-..": "э",
+            ".-.-.": "з"
+        }
+    };
+
+    function init() {
+        loadRecords();
+        updateReference();
+        setupEventListeners();
+        updateRecordsDisplay();
     }
-    
-    h1 {
-        font-size: 24px;
+
+    function loadRecords() {
+        const saved = localStorage.getItem('morseTrainerRecords');
+        if (saved) {
+            records = JSON.parse(saved);
+        }
     }
-    
-    .panel {
-        padding: 20px;
+
+    function saveRecords() {
+        localStorage.setItem('morseTrainerRecords', JSON.stringify(records));
     }
-    
-    .target-char {
-        font-size: 56px;
+
+    function updateRecordsDisplay() {
+        updateRecordsList('keyboard');
+        updateRecordsList('morse');
     }
-    
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+
+    function updateRecordsList(mode) {
+        const listElement = mode === 'keyboard' ? elements.keyboardRecords : elements.morseRecords;
+        const modeRecords = records[mode];
+        
+        if (!modeRecords || modeRecords.length === 0) {
+            listElement.innerHTML = `
+                <div class="no-records">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+                    </svg>
+                    <p>Пока нет рекордов</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Пройдите тренировку, чтобы установить рекорд!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        modeRecords.forEach((record, index) => {
+            const isCurrent = record.id === trainingData.currentRecordId;
+            const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+            
+            html += `
+                <div class="record-item ${isCurrent ? 'current' : ''}">
+                    <div class="record-rank ${rankClass}">${index + 1}</div>
+                    <div class="record-info">
+                        <div style="font-weight: 600; color: var(--text);">
+                            ${record.mode === 'keyboard' ? '⌨️ Клавиатура' : '••--- Морзе'} • ${record.layout === 'ru' ? 'Русская' : 'Английская'}
+                        </div>
+                        <div class="record-date">${formatDate(record.date)}</div>
+                    </div>
+                    <div class="record-score">
+                        <div class="record-accuracy">${record.accuracy}%</div>
+                        <div class="record-details">
+                            <span>${record.correct}</span> из <span>${record.total}</span>
+                            ${record.time ? ` • ${record.time}с` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        listElement.innerHTML = html;
     }
-    
-    .controls {
-        flex-direction: column;
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
-    
-    .control-group {
-        width: 100%;
+
+    function updateReference() {
+        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        let html = '<div class="ref-grid">';
+        
+        Object.entries(table).forEach(([code, char]) => {
+            if (char.length === 1 && char.match(/[a-zа-я]/i)) {
+                html += `
+                    <div class="ref-item">
+                        <div class="ref-char">${char.toUpperCase()}</div>
+                        <div class="ref-code">${code.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                    </div>
+                `;
+            }
+        });
+        
+        html += '</div>';
+        elements.refContent.innerHTML = html;
     }
-    
-    .start-btn {
-        width: 100%;
+
+    function setupEventListeners() {
+        elements.modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                elements.modeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                
+                if (currentMode === 'keyboard') {
+                    elements.keyboardInput.style.display = 'block';
+                    elements.morseInput.style.display = 'none';
+                    elements.hint.textContent = 'Нажмите соответствующую клавишу';
+                    clearMorseInput();
+                } else {
+                    elements.keyboardInput.style.display = 'none';
+                    elements.morseInput.style.display = 'block';
+                    elements.hint.textContent = 'Введите код Морзе';
+                    clearTypedChar();
+                }
+                
+                if (trainingActive) {
+                    updateHint();
+                }
+            });
+        });
+
+        elements.recordTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                elements.recordTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const mode = tab.dataset.mode;
+                elements.keyboardRecords.style.display = mode === 'keyboard' ? 'block' : 'none';
+                elements.morseRecords.style.display = mode === 'morse' ? 'block' : 'none';
+            });
+        });
+
+        elements.startBtn.addEventListener('click', () => {
+            if (!trainingData.started) {
+                startTraining();
+            } else {
+                restartTraining();
+            }
+        });
+
+        elements.clearRecordsBtn.addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите очистить все рекорды? Это действие нельзя отменить.')) {
+                records = { keyboard: [], morse: [] };
+                saveRecords();
+                updateRecordsDisplay();
+            }
+        });
+
+        elements.layoutSelect.addEventListener('change', () => {
+            currentLayout = elements.layoutSelect.value;
+            updateReference();
+            if (trainingActive) {
+                generateSequence();
+                updateTargetChar();
+            }
+        });
+
+        elements.clearBtn.addEventListener('click', clearMorseInput);
+
+        elements.morseText.addEventListener('input', function(e) {
+            const val = e.target.value.replace(/[^.-]/g, '');
+            morseSymbol = val;
+            e.target.value = val;
+            
+            if (trainingActive) {
+                autoCheckMorse();
+            }
+        });
+
+        document.querySelectorAll('.btn[data-char]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!trainingActive) return;
+                morseSymbol += btn.dataset.char;
+                elements.morseText.value = morseSymbol;
+                elements.morseText.focus();
+                autoCheckMorse();
+            });
+        });
+
+        elements.toggleRef.addEventListener('click', () => {
+            elements.refContent.classList.toggle('visible');
+            elements.toggleRef.textContent = 
+                elements.refContent.classList.contains('visible') ? 'Скрыть' : 'Показать';
+        });
+
+        document.addEventListener('keydown', handleKeyPress);
     }
-    
-    .mode-buttons {
-        flex-direction: column;
+
+    function handleKeyPress(e) {
+        if (!trainingActive || currentMode !== 'keyboard') return;
+        
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        
+        const key = e.key.toLowerCase();
+        const keyMap = keyMaps[currentLayout];
+        
+        if (keyMap && keyMap[key]) {
+            e.preventDefault();
+            currentKey = key;
+            elements.typedChar.textContent = currentKey.toUpperCase();
+            
+            setTimeout(() => {
+                checkKeyboardAnswer();
+            }, 100);
+        }
     }
-    
-    .records-tabs {
-        flex-direction: column;
+
+    function checkKeyboardAnswer() {
+        if (!currentKey || !trainingActive) return;
+        
+        const keyMap = keyMaps[currentLayout];
+        const pressedChar = keyMap[currentKey];
+        const targetChar = trainingData.targetChar.toLowerCase();
+        
+        elements.feedback.className = 'feedback';
+        
+        if (pressedChar === targetChar) {
+            elements.feedback.textContent = `✓ Правильно! Нажали: ${currentKey.toUpperCase()}`;
+            elements.feedback.classList.add('correct');
+            
+            trainingData.correct++;
+            trainingData.streak++;
+            if (trainingData.streak > trainingData.bestStreak) {
+                trainingData.bestStreak = trainingData.streak;
+            }
+            
+            setTimeout(() => {
+                nextRound();
+            }, 1000);
+            
+        } else {
+            elements.feedback.textContent = `✗ Ошибка! Нужно было: ${targetChar.toUpperCase()}`;
+            elements.feedback.classList.add('error');
+            
+            trainingData.errors++;
+            trainingData.streak = 0;
+            
+            showCorrectKey();
+        }
+        
+        updateStats();
+        currentKey = '';
     }
-}
+
+    function showCorrectKey() {
+        const targetChar = trainingData.targetChar.toLowerCase();
+        const keyMap = keyMaps[currentLayout];
+        
+        let correctKey = '';
+        for (const [key, value] of Object.entries(keyMap)) {
+            if (value === targetChar) {
+                correctKey = key;
+                break;
+            }
+        }
+        
+        if (correctKey) {
+            const originalText = elements.typedChar.textContent;
+            elements.typedChar.textContent = correctKey.toUpperCase();
+            elements.typedChar.style.color = 'var(--error)';
+            
+            setTimeout(() => {
+                elements.typedChar.textContent = originalText;
+                elements.typedChar.style.color = '';
+                clearTypedChar();
+            }, 2000);
+        }
+    }
+
+    function autoCheckMorse() {
+        if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
+        
+        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        const decodedChar = table[morseSymbol];
+        
+        elements.feedback.className = 'feedback';
+        
+        if (decodedChar) {
+            elements.feedback.textContent = `Получен символ: ${decodedChar.toUpperCase()}`;
+            elements.feedback.classList.add('correct');
+            
+            if (decodedChar.toLowerCase() === trainingData.targetChar.toLowerCase()) {
+                elements.feedback.textContent = `✓ Правильно! ${trainingData.targetChar.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
+                
+                trainingData.correct++;
+                trainingData.streak++;
+                if (trainingData.streak > trainingData.bestStreak) {
+                    trainingData.bestStreak = trainingData.streak;
+                }
+                
+                setTimeout(() => {
+                    nextRound();
+                    clearMorseInput();
+                }, 1000);
+                
+                updateStats();
+            }
+        } else {
+            elements.feedback.textContent = "Неизвестный код Морзе";
+            elements.feedback.classList.add('error');
+        }
+    }
+
+    function clearMorseInput() {
+        morseSymbol = '';
+        elements.morseText.value = '';
+        elements.feedback.className = 'feedback';
+        elements.feedback.textContent = currentMode === 'morse' ? 'Введите код Морзе' : '';
+    }
+
+    function clearTypedChar() {
+        currentKey = '';
+        elements.typedChar.textContent = '—';
+    }
+
+    function startTraining() {
+        trainingActive = true;
+        trainingData.started = true;
+        currentLayout = elements.layoutSelect.value;
+        trainingData.totalRounds = parseInt(elements.roundsSelect.value);
+        trainingData.startTime = new Date();
+        
+        generateSequence();
+        
+        trainingData.currentRound = 0;
+        trainingData.correct = 0;
+        trainingData.errors = 0;
+        trainingData.streak = 0;
+        trainingData.bestStreak = 0;
+        
+        updateTargetChar();
+        updateProgress();
+        updateStats();
+        
+        elements.startBtn.textContent = '🔄 Перезапустить';
+        elements.feedback.className = 'feedback';
+        elements.feedback.textContent = currentMode === 'keyboard' ? 
+            'Нажмите клавишу на клавиатуре' : 'Введите код Морзе';
+        
+        updateHint();
+        
+        if (currentMode === 'morse') {
+            elements.morseText.focus();
+        }
+    }
+
+    function restartTraining() {
+        clearTypedChar();
+        clearMorseInput();
+        startTraining();
+    }
+
+    function generateSequence() {
+        trainingData.sequence = [];
+        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        const chars = Object.values(table).filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+        
+        for (let i = 0; i < trainingData.totalRounds; i++) {
+            const randomChar = chars[Math.floor(Math.random() * chars.length)];
+            trainingData.sequence.push(randomChar);
+        }
+    }
+
+    function updateTargetChar() {
+        if (trainingData.sequence[trainingData.currentRound]) {
+            trainingData.targetChar = trainingData.sequence[trainingData.currentRound];
+            elements.targetChar.textContent = trainingData.targetChar.toUpperCase();
+        }
+    }
+
+    function updateHint() {
+        if (currentMode === 'keyboard') {
+            elements.hint.textContent = 'Нажмите соответствующую клавишу на клавиатуре';
+        } else {
+            elements.hint.textContent = 'Введите код Морзе (точки и тире)';
+        }
+    }
+
+    function nextRound() {
+        trainingData.currentRound++;
+        updateProgress();
+        
+        if (trainingData.currentRound < trainingData.totalRounds) {
+            updateTargetChar();
+            clearTypedChar();
+            clearMorseInput();
+            elements.feedback.textContent = currentMode === 'keyboard' ? 
+                'Нажмите следующую клавишу' : 'Введите следующий код';
+            elements.feedback.className = 'feedback';
+            
+            if (currentMode === 'morse') {
+                elements.morseText.focus();
+            }
+        } else {
+            finishTraining();
+        }
+    }
+
+    function finishTraining() {
+        trainingActive = false;
+        trainingData.endTime = new Date();
+        const timeDiff = (trainingData.endTime - trainingData.startTime) / 1000;
+        const accuracy = Math.round((trainingData.correct / trainingData.totalRounds) * 100);
+        
+        elements.feedback.textContent = `Тренировка завершена! Точность: ${accuracy}% • Время: ${timeDiff.toFixed(1)}с`;
+        elements.feedback.className = 'feedback';
+        
+        elements.hint.textContent = `Нажмите "Перезапустить" чтобы начать заново`;
+        
+        saveRecord(accuracy, timeDiff);
+    }
+
+    function saveRecord(accuracy, time) {
+        const record = {
+            id: Date.now(),
+            mode: currentMode,
+            layout: currentLayout,
+            date: new Date().toISOString(),
+            correct: trainingData.correct,
+            total: trainingData.totalRounds,
+            accuracy: accuracy,
+            time: time.toFixed(1),
+            bestStreak: trainingData.bestStreak
+        };
+        
+        records[currentMode].push(record);
+        
+        records[currentMode].sort((a, b) => {
+            if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
+            return a.time - b.time;
+        });
+        
+        records[currentMode] = records[currentMode].slice(0, 10);
+        
+        trainingData.currentRecordId = record.id;
+        
+        saveRecords();
+        updateRecordsDisplay();
+    }
+
+    function updateProgress() {
+        const percent = (trainingData.currentRound / trainingData.totalRounds) * 100;
+        elements.progressFill.style.width = `${percent}%`;
+        elements.currentRound.textContent = trainingData.currentRound;
+        elements.totalRounds.textContent = trainingData.totalRounds;
+    }
+
+    function updateStats() {
+        elements.correctCount.textContent = trainingData.correct;
+        elements.errorCount.textContent = trainingData.errors;
+        elements.streakCount.textContent = trainingData.streak;
+        
+        const total = trainingData.correct + trainingData.errors;
+        const accuracy = total > 0 ? Math.round((trainingData.correct / total) * 100) : 0;
+        elements.accuracy.textContent = `${accuracy}%`;
+    }
+
+    init();
+});
