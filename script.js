@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-const morseCode = {
+const morseTables = {
     en: {
         ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
         "..-.": "f", "--.": "g", "....": "h", "..": "i", ".---": "j",
