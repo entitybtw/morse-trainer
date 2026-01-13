@@ -1,19 +1,18 @@
 :root {
     --bg: #f8fafc;
     --panel: #ffffff;
-    --text: #e6e6eb;
+    --text: #1e293b;
     --muted: #64748b;
-    --accent: #7c7cff;
+    --accent: #3b82f6;
     --border: #e2e8f0;
     --success: #10b981;
     --error: #ef4444;
     --warning: #f59e0b;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --accent-light: #f1dbfe;
+    --accent-light: #dbeafe;
     --success-light: #d1fae5;
     --error-light: #fee2e2;
 }
-
 
 * {
     margin: 0;
