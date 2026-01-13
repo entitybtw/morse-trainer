@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let trainingActive = false;
     let currentKey = '';
     let morseSymbol = '';
-    let checkingInProgress = false;
     
     let trainingData = {
         targetChar: '',
@@ -103,9 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadRecords() {
         const saved = localStorage.getItem('morseTrainerRecords');
-        if (saved) {
-            records = JSON.parse(saved);
-        }
+        if (saved) records = JSON.parse(saved);
     }
 
     function saveRecords() {
@@ -211,9 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearTypedChar();
                 }
                 
-                if (trainingActive) {
-                    updateHint();
-                }
+                if (trainingActive) updateHint();
             });
         });
 
@@ -229,11 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         elements.startBtn.addEventListener('click', () => {
-            if (!trainingData.started) {
-                startTraining();
-            } else {
-                restartTraining();
-            }
+            if (!trainingData.started) startTraining();
+            else restartTraining();
         });
 
         elements.clearRecordsBtn.addEventListener('click', () => {
@@ -289,7 +281,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.repeat) return;
         
         e.preventDefault();
-        e.stopImmediatePropagation();
         
         const key = e.key.toLowerCase();
         const keyMap = keyMaps[currentLayout];
@@ -297,17 +288,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (keyMap && keyMap[key]) {
             currentKey = key;
             elements.typedChar.textContent = currentKey.toUpperCase();
-            
-            setTimeout(() => {
-                checkKeyboardAnswer();
-            }, 50);
+            checkKeyboardAnswer();
         }
     }
 
     function checkKeyboardAnswer() {
-        if (!currentKey || !trainingActive || checkingInProgress) return;
-        
-        checkingInProgress = true;
+        if (!currentKey || !trainingActive) return;
         
         const keyMap = keyMaps[currentLayout];
         const pressedChar = keyMap[currentKey];
@@ -325,19 +311,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 trainingData.bestStreak = trainingData.streak;
             }
             
-            setTimeout(() => {
-                nextRound();
-                checkingInProgress = false;
-            }, 800);
+            setTimeout(nextRound, 800);
         } else {
             elements.feedback.textContent = `✗ Ошибка! Нужно: ${targetChar.toUpperCase()}`;
             elements.feedback.classList.add('error');
             
             trainingData.errors++;
             trainingData.streak = 0;
-            
             showCorrectKey();
-            checkingInProgress = false;
         }
         
         updateStats();
@@ -373,35 +354,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const decodedChar = table[morseSymbol];
         const currentTarget = trainingData.targetChar.toLowerCase();
         
+        if (!decodedChar) return;
+        
         elements.feedback.className = 'feedback';
         
-        if (decodedChar) {
-            if (decodedChar.toLowerCase() === currentTarget) {
-                elements.feedback.textContent = `✓ Правильно! ${currentTarget.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
-                elements.feedback.classList.add('correct');
-                
-                trainingData.correct++;
-                trainingData.streak++;
-                if (trainingData.streak > trainingData.bestStreak) {
-                    trainingData.bestStreak = trainingData.streak;
-                }
-                
-                updateStats();
-                setTimeout(() => {
-                    nextRound();
-                    clearMorseInput();
-                }, 800);
-            } else {
-                elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
-                elements.feedback.classList.add('error');
-                
-                trainingData.errors++;
-                trainingData.streak = 0;
-                updateStats();
+        if (decodedChar.toLowerCase() === currentTarget) {
+            elements.feedback.textContent = `✓ Правильно! ${currentTarget.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
+            elements.feedback.classList.add('correct');
+            
+            trainingData.correct++;
+            trainingData.streak++;
+            if (trainingData.streak > trainingData.bestStreak) {
+                trainingData.bestStreak = trainingData.streak;
             }
+            
+            updateStats();
+            setTimeout(() => {
+                nextRound();
+                clearMorseInput();
+            }, 800);
         } else {
-            elements.feedback.textContent = "Неизвестный код Морзе";
+            elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
             elements.feedback.classList.add('error');
+            
+            trainingData.errors++;
+            trainingData.streak = 0;
+            updateStats();
         }
     }
 
@@ -432,7 +410,6 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingData.errors = 0;
         trainingData.streak = 0;
         trainingData.bestStreak = 0;
-        checkingInProgress = false;
         
         updateTargetChar();
         updateProgress();
@@ -460,14 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingData.sequence = [];
         const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
         const chars = Object.values(table).filter(c => 
-            currentLayout === 'en' ? 
-            /[a-z]/i.test(c) : 
-            /[а-яё]/i.test(c)
+            currentLayout === 'en' ? /[a-z]/i.test(c) : /[а-яё]/i.test(c)
         );
         
-        if (chars.length === 0) {
-            chars.push(currentLayout === 'ru' ? 'а' : 'a');
-        }
+        if (chars.length === 0) chars.push(currentLayout === 'ru' ? 'а' : 'a');
         
         for (let i = 0; i < trainingData.totalRounds; i++) {
             const randomChar = chars[Math.floor(Math.random() * chars.length)];
@@ -483,11 +456,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateHint() {
-        if (currentMode === 'keyboard') {
-            elements.hint.textContent = 'Нажмите соответствующую клавишу на клавиатуре';
-        } else {
-            elements.hint.textContent = 'Введите код Морзе (точки и тире)';
-        }
+        elements.hint.textContent = currentMode === 'keyboard' ? 
+            'Нажмите соответствующую клавишу на клавиатуре' : 
+            'Введите код Морзе (точки и тире)';
     }
 
     function nextRound() {
@@ -502,9 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Нажмите следующую клавишу' : 'Введите следующий код';
             elements.feedback.className = 'feedback';
             
-            if (currentMode === 'morse') {
-                elements.morseText.focus();
-            }
+            if (currentMode === 'morse') elements.morseText.focus();
         } else {
             finishTraining();
         }
@@ -518,7 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         elements.feedback.textContent = `Тренировка завершена! Точность: ${accuracy}% • Время: ${timeDiff.toFixed(1)}с`;
         elements.feedback.className = 'feedback';
-        
         elements.hint.textContent = `Нажмите "Перезапустить" чтобы начать заново`;
         
         saveRecord(accuracy, timeDiff);
