@@ -53,25 +53,25 @@ document.addEventListener('DOMContentLoaded', function() {
         morse: []
     };
 
-    const keyMaps = {
-        en: {
-            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
-            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
-            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
-            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
-            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
-            'z': 'z'
-        },
-        ru: {
-            'ф': 'а', 'и': 'б', 'в': 'в', 'п': 'г', 'р': 'д',
-            'о': 'е', 'щ': 'ё', 'л': 'ж', 'д': 'з', 'ь': 'и',
-            'т': 'й', 'ы': 'к', 'м': 'л', 'ц': 'м', 'ч': 'н',
-            'н': 'о', 'я': 'п', 'е': 'р', 'г': 'с', 'ш': 'т',
-            'ю': 'у', 'з': 'ф', 'х': 'х', 'ъ': 'ц', 'э': 'ч',
-            'ж': 'ш', 'б': 'щ', 'ё': 'ъ', 'с': 'ы', 'м': 'ь',
-            'у': 'э', 'к': 'ю', 'а': 'я'
-        }
-    };
+const keyMaps = {
+    en: {
+        'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
+        'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
+        'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
+        'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
+        'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
+        'z': 'z'
+    },
+    ru: {
+        'ф': 'а', 'и': 'б', 'в': 'в', 'а': 'г', 'п': 'д',
+        'р': 'е', 'о': 'ё', 'л': 'ж', 'д': 'з', 'ж': 'и',
+        'э': 'й', 'я': 'к', 'т': 'л', 'ь': 'м', 'ы': 'н',
+        'ш': 'о', 'щ': 'п', 'з': 'р', 'к': 'с', 'ы': 'т',
+        'е': 'у', 'г': 'ф', 'м': 'х', 'ц': 'ц', 'ч': 'ч',
+        'н': 'ш', 'й': 'щ', 'б': 'ъ', 'ю': 'ы', 'х': 'ь',
+        'ъ': 'э', 'ё': 'ю', 'с': 'я'
+    }
+};
 
     const morseTables = {
         en: {
@@ -363,51 +363,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function autoCheckMorse() {
-        if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
-        
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const decodedChar = table[morseSymbol];
-        const currentTarget = trainingData.targetChar;
-        
-        elements.feedback.className = 'feedback';
-        
-        if (decodedChar) {
-            if (decodedChar === currentTarget) {
-                elements.feedback.textContent = `✓ Правильно! ${currentTarget.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
-                elements.feedback.classList.add('correct');
-                
-                trainingData.correct++;
-                trainingData.streak++;
-                if (trainingData.streak > trainingData.bestStreak) {
-                    trainingData.bestStreak = trainingData.streak;
-                }
-                
-                updateStats();
-                setTimeout(() => {
-                    nextRound();
-                    clearMorseInput();
-                }, 1000);
-            } else {
-                elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
-                elements.feedback.classList.add('error');
-                
-                trainingData.errors++;
-                trainingData.streak = 0;
-                updateStats();
+function autoCheckMorse() {
+    if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
+    
+    const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+    const decodedChar = table[morseSymbol];
+    const currentTarget = trainingData.targetChar.toLowerCase(); // Важное исправление!
+    
+    elements.feedback.className = 'feedback';
+    
+    if (decodedChar) {
+        if (decodedChar.toLowerCase() === currentTarget) {
+            elements.feedback.textContent = `✓ Правильно! ${currentTarget.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
+            elements.feedback.classList.add('correct');
+            
+            trainingData.correct++;
+            trainingData.streak++;
+            if (trainingData.streak > trainingData.bestStreak) {
+                trainingData.bestStreak = trainingData.streak;
             }
+            
+            updateStats();
+            setTimeout(() => {
+                nextRound();
+                clearMorseInput();
+            }, 1000);
         } else {
-            elements.feedback.textContent = "Неизвестный код Морзе";
+            elements.feedback.textContent = `✗ Ошибка! Нужно: ${currentTarget.toUpperCase()}, вы ввели: ${decodedChar.toUpperCase()}`;
             elements.feedback.classList.add('error');
+            
+            trainingData.errors++;
+            trainingData.streak = 0;
+            updateStats();
         }
+    } else {
+        elements.feedback.textContent = "Неизвестный код Морзе";
+        elements.feedback.classList.add('error');
     }
+}
 
-    function clearMorseInput() {
-        morseSymbol = '';
-        elements.morseText.value = '';
-        elements.feedback.className = 'feedback';
-        elements.feedback.textContent = currentMode === 'morse' ? 'Введите код Морзе' : '';
-    }
+function clearMorseInput() {
+    morseSymbol = '';
+    elements.morseText.value = '';
+    elements.feedback.classList.remove('waiting'); // Добавьте эту строку
+}
 
     function clearTypedChar() {
         currentKey = '';
@@ -481,25 +480,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function nextRound() {
-        trainingData.currentRound++;
-        updateProgress();
+function nextRound() {
+    trainingData.currentRound++;
+    updateProgress();
+    
+    if (trainingData.currentRound < trainingData.totalRounds) {
+        updateTargetChar();
+        clearTypedChar();
+        clearMorseInput();
+        elements.feedback.textContent = currentMode === 'keyboard' ? 
+            'Нажмите следующую клавишу' : 'Введите следующий код';
+        elements.feedback.className = 'feedback';
+        elements.feedback.classList.remove('waiting');
         
-        if (trainingData.currentRound < trainingData.totalRounds) {
-            updateTargetChar();
-            clearTypedChar();
-            clearMorseInput();
-            elements.feedback.textContent = currentMode === 'keyboard' ? 
-                'Нажмите следующую клавишу' : 'Введите следующий код';
-            elements.feedback.className = 'feedback';
-            
-            if (currentMode === 'morse') {
-                elements.morseText.focus();
-            }
-        } else {
-            finishTraining();
+        if (currentMode === 'morse') {
+            elements.morseText.focus();
         }
+    } else {
+        finishTraining();
     }
+}
 
     function finishTraining() {
         trainingActive = false;
