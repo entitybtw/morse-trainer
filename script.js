@@ -44,7 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
         sequence: [],
         started: false,
         startTime: null,
-        endTime: null
+        endTime: null,
+        currentRecordId: null
     };
 
     let records = {
@@ -62,36 +63,35 @@ document.addEventListener('DOMContentLoaded', function() {
             'z': 'z'
         },
         ru: {
-            'а': 'ф', 'б': 'и', 'в': 'в', 'г': 'п', 'д': 'р',
-            'е': 'о', 'ё': 'щ', 'ж': 'л', 'з': 'д', 'и': 'ь',
-            'й': 'т', 'к': 'ы', 'л': 'м', 'м': 'ц', 'н': 'ч',
-            'о': 'н', 'п': 'я', 'р': 'е', 'с': 'г', 'т': 'ш',
-            'у': 'ю', 'ф': 'з', 'х': 'х', 'ц': 'ъ', 'ч': 'э',
-            'ш': 'ж', 'щ': 'б', 'ъ': 'ё', 'ы': 'с', 'ь': 'м',
-            'э': 'у', 'ю': 'к', 'я': 'а'
+            'ф': 'а', 'и': 'б', 'в': 'в', 'п': 'г', 'р': 'д',
+            'о': 'е', 'щ': 'ё', 'л': 'ж', 'д': 'з', 'ь': 'и',
+            'т': 'й', 'ы': 'к', 'м': 'л', 'ц': 'м', 'ч': 'н',
+            'н': 'о', 'я': 'п', 'е': 'р', 'г': 'с', 'ш': 'т',
+            'ю': 'у', 'з': 'ф', 'х': 'х', 'ъ': 'ц', 'э': 'ч',
+            'ж': 'ш', 'б': 'щ', 'ё': 'ъ', 'с': 'ы', 'м': 'ь',
+            'у': 'э', 'к': 'ю', 'а': 'я'
         }
     };
 
-const morseTables = {
-    en: {
-        ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
-        "..-.": "f", "--.": "g", "....": "h", "..": "i", ".---": "j",
-        "-.-": "k", ".-..": "l", "--": "m", "-.": "n", "---": "o",
-        ".--.": "p", "--.-": "q", ".-.": "r", "...": "s", "-": "t",
-        "..-": "u", "...-": "v", ".--": "w", "-..-": "x", "-.--": "y",
-        "--..": "z",
-    },
-
-ru: {
-    ".-": "а", "-...": "б", "-.-.": "ц", "-..": "д", ".": "е",
-    "..-.": "ж", "--.": "г", "....": "х", "..": "и", ".---": "й",
-    "-.-": "к", ".-..": "л", "--": "м", "-.": "н", "---": "о",
-    ".--.": "п", "--.-": "я", ".-.": "р", "...": "с", "-": "т",
-    "..-": "у", "...-": "в", ".--": "ё", "-..-": "ь", "-.--": "ы",
-    "--..": "з", "---.": "ч", "----": "б", "..-..": "э", ".-.-.": "ъ",
-    "--.--": "щ", "-.-.-": "ш", ".--.-": "ф"
-}
-};
+    const morseTables = {
+        en: {
+            ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
+            "..-.": "f", "--.": "g", "....": "h", "..": "i", ".---": "j",
+            "-.-": "k", ".-..": "l", "--": "m", "-.": "n", "---": "o",
+            ".--.": "p", "--.-": "q", ".-.": "r", "...": "s", "-": "t",
+            "..-": "u", "...-": "v", ".--": "w", "-..-": "x", "-.--": "y",
+            "--..": "z"
+        },
+        ru: {
+            ".-": "а", "-...": "б", "-.-.": "ц", "-..": "д", ".": "е",
+            "..-.": "ж", "--.": "г", "....": "х", "..": "и", ".---": "й",
+            "-.-": "к", ".-..": "л", "--": "м", "-.": "н", "---": "о",
+            ".--.": "п", "--.-": "я", ".-.": "р", "...": "с", "-": "т",
+            "..-": "у", "...-": "в", ".--": "ё", "-..-": "ь", "-.--": "ы",
+            "--..": "з", "---.": "ч", "----": "б", "..-..": "э", ".-.-.": "ъ",
+            "--.--": "щ", "-.-.-": "ш", ".--.-": "ф"
+        }
+    };
 
     function init() {
         loadRecords();
@@ -177,7 +177,7 @@ ru: {
         let html = '<div class="ref-grid">';
         
         Object.entries(table).forEach(([code, char]) => {
-            if (char.length === 1 && char.match(/[a-zа-я]/i)) {
+            if (char.length === 1 && (currentLayout === 'en' ? /[a-z]/.test(char) : /[а-яё]/.test(char))) {
                 html += `
                     <div class="ref-item">
                         <div class="ref-char">${char.toUpperCase()}</div>
@@ -259,8 +259,8 @@ ru: {
             morseSymbol = val;
             e.target.value = val;
             
-            if (trainingActive) {
-                autoCheckMorse();
+            if (trainingActive && currentMode === 'morse') {
+                setTimeout(autoCheckMorse, 300);
             }
         });
 
@@ -270,7 +270,7 @@ ru: {
                 morseSymbol += btn.dataset.char;
                 elements.morseText.value = morseSymbol;
                 elements.morseText.focus();
-                autoCheckMorse();
+                setTimeout(autoCheckMorse, 300);
             });
         });
 
@@ -324,7 +324,6 @@ ru: {
             setTimeout(() => {
                 nextRound();
             }, 1000);
-            
         } else {
             elements.feedback.textContent = `✗ Ошибка! Нужно было: ${targetChar.toUpperCase()}`;
             elements.feedback.classList.add('error');
@@ -364,49 +363,44 @@ ru: {
         }
     }
 
-function autoCheckMorse() {
-    if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
-    
-    const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-    const decodedChar = table[morseSymbol];
-    
-    // ✅ СОХРАНЯЕМ targetChar ПЕРЕД проверкой
-    const currentTarget = trainingData.targetChar.toLowerCase();
-    
-    elements.feedback.className = 'feedback';
-    
-    if (decodedChar) {
-        elements.feedback.textContent = `Получен символ: ${decodedChar.toUpperCase()}`;
-        elements.feedback.classList.add('correct');
+    function autoCheckMorse() {
+        if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
         
-        if (decodedChar.toLowerCase() === currentTarget) {
-            elements.feedback.textContent = `✓ Правильно! ${trainingData.targetChar.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
-            
-            trainingData.correct++;
-            trainingData.streak++;
-            if (trainingData.streak > trainingData.bestStreak) {
-                trainingData.bestStreak = trainingData.streak;
+        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        const decodedChar = table[morseSymbol];
+        const currentTarget = trainingData.targetChar;
+        
+        elements.feedback.className = 'feedback';
+        
+        if (decodedChar) {
+            if (decodedChar === currentTarget) {
+                elements.feedback.textContent = `✓ Правильно! ${currentTarget.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
+                elements.feedback.classList.add('correct');
+                
+                trainingData.correct++;
+                trainingData.streak++;
+                if (trainingData.streak > trainingData.bestStreak) {
+                    trainingData.bestStreak = trainingData.streak;
+                }
+                
+                updateStats();
+                setTimeout(() => {
+                    nextRound();
+                    clearMorseInput();
+                }, 1000);
+            } else {
+                elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
+                elements.feedback.classList.add('error');
+                
+                trainingData.errors++;
+                trainingData.streak = 0;
+                updateStats();
             }
-            
-            setTimeout(() => {
-                nextRound();
-                clearMorseInput();
-            }, 1000);
-            
-            updateStats();
         } else {
-            elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
+            elements.feedback.textContent = "Неизвестный код Морзе";
             elements.feedback.classList.add('error');
-            trainingData.errors++;
-            trainingData.streak = 0;
-            updateStats();
         }
-    } else {
-        elements.feedback.textContent = "Неизвестный код Морзе";
-        elements.feedback.classList.add('error');
     }
-}
-
 
     function clearMorseInput() {
         morseSymbol = '';
@@ -460,7 +454,11 @@ function autoCheckMorse() {
     function generateSequence() {
         trainingData.sequence = [];
         const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const chars = Object.values(table).filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+        const chars = Object.values(table).filter(c => 
+            currentLayout === 'en' ? 
+            c.length === 1 && /[a-z]/.test(c) : 
+            c.length === 1 && /[а-яё]/.test(c)
+        );
         
         for (let i = 0; i < trainingData.totalRounds; i++) {
             const randomChar = chars[Math.floor(Math.random() * chars.length)];
