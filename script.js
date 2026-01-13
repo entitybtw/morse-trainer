@@ -364,39 +364,49 @@ ru: {
         }
     }
 
-    function autoCheckMorse() {
-        if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
+function autoCheckMorse() {
+    if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
+    
+    const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+    const decodedChar = table[morseSymbol];
+    
+    // ✅ СОХРАНЯЕМ targetChar ПЕРЕД проверкой
+    const currentTarget = trainingData.targetChar.toLowerCase();
+    
+    elements.feedback.className = 'feedback';
+    
+    if (decodedChar) {
+        elements.feedback.textContent = `Получен символ: ${decodedChar.toUpperCase()}`;
+        elements.feedback.classList.add('correct');
         
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const decodedChar = table[morseSymbol];
-        
-        elements.feedback.className = 'feedback';
-        
-        if (decodedChar) {
-            elements.feedback.textContent = `Получен символ: ${decodedChar.toUpperCase()}`;
-            elements.feedback.classList.add('correct');
+        if (decodedChar.toLowerCase() === currentTarget) {
+            elements.feedback.textContent = `✓ Правильно! ${trainingData.targetChar.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
             
-            if (decodedChar.toLowerCase() === trainingData.targetChar.toLowerCase()) {
-                elements.feedback.textContent = `✓ Правильно! ${trainingData.targetChar.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
-                
-                trainingData.correct++;
-                trainingData.streak++;
-                if (trainingData.streak > trainingData.bestStreak) {
-                    trainingData.bestStreak = trainingData.streak;
-                }
-                
-                setTimeout(() => {
-                    nextRound();
-                    clearMorseInput();
-                }, 1000);
-                
-                updateStats();
+            trainingData.correct++;
+            trainingData.streak++;
+            if (trainingData.streak > trainingData.bestStreak) {
+                trainingData.bestStreak = trainingData.streak;
             }
+            
+            setTimeout(() => {
+                nextRound();
+                clearMorseInput();
+            }, 1000);
+            
+            updateStats();
         } else {
-            elements.feedback.textContent = "Неизвестный код Морзе";
+            elements.feedback.textContent = `✗ Нужно: ${currentTarget.toUpperCase()}`;
             elements.feedback.classList.add('error');
+            trainingData.errors++;
+            trainingData.streak = 0;
+            updateStats();
         }
+    } else {
+        elements.feedback.textContent = "Неизвестный код Морзе";
+        elements.feedback.classList.add('error');
     }
+}
+
 
     function clearMorseInput() {
         morseSymbol = '';
