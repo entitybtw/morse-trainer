@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.startBtn.textContent = '🔄 Перезапустить';
         elements.feedback.className = 'feedback';
         elements.feedback.textContent = currentMode === 'keyboard' ? 
-            'Нажмите клавишу на клавиатуре' : 'Введите код Морзе';
+            'Наберите символ' : 'Введите код Морзе';
         
         elements.errorMessage.style.display = 'none';
         
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateHint() {
         if (currentMode === 'keyboard') {
-            elements.hint.textContent = 'Нажмите соответствующую клавишу на клавиатуре';
+            elements.hint.textContent = 'Нажмите соответствующий символ';
         } else {
             elements.hint.textContent = 'Введите код Морзе (точки и тире)';
         }
