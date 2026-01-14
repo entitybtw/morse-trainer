@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (currentMode === 'keyboard') {
                     elements.keyboardInput.style.display = 'block';
                     elements.morseInput.style.display = 'none';
-                    elements.hint.textContent = 'Нажмите соответствующую клавишу';
+                    elements.hint.textContent = 'Наберите соответствующий символ';
                     clearMorseInput();
                 } else {
                     elements.keyboardInput.style.display = 'none';
@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTypedChar();
             clearMorseInput();
             elements.feedback.textContent = currentMode === 'keyboard' ? 
-                'Нажмите следующую клавишу' : 'Введите следующий код';
+                'Нажмите следующий символ' : 'Введите следующий код';
             elements.feedback.className = 'feedback';
             
             if (currentMode === 'morse') {
