@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="name-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>🏆 Введите ваше имя</h3>
+            <p>Ваше имя будет отображаться в таблице рекордов</p>
+            <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20">
+            <div class="modal-buttons">
+                <button id="save-name-btn" class="modal-btn primary">Сохранить</button>
+                <button id="cancel-name-btn" class="modal-btn secondary">Позже</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>Тренажер Азбуки Морзе</h1>
@@ -72,8 +84,11 @@
                     </div>
                 </div>
 
-                <div class="feedback" id="feedback">
-                    Начните тренировку
+                <div class="feedback-section">
+                    <div class="feedback" id="feedback">
+                        Начните тренировку
+                    </div>
+                    <div class="error-message" id="error-message" style="display: none;"></div>
                 </div>
 
                 <div class="progress-section">
@@ -111,7 +126,10 @@
             <div class="panel records-section">
                 <div class="records-header">
                     <h3>🏆 Таблица рекордов</h3>
-                    <button id="clear-records-btn" class="clear-btn">Очистить</button>
+                    <div class="header-actions">
+                        <button id="edit-name-btn" class="edit-btn">✏️ Изменить имя</button>
+                        <button id="clear-records-btn" class="clear-btn">Очистить</button>
+                    </div>
                 </div>
                 <div class="records-content">
                     <div class="records-tabs">

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
         targetChar: document.getElementById('target-char'),
         typedChar: document.getElementById('typed-char'),
         feedback: document.getElementById('feedback'),
+        errorMessage: document.getElementById('error-message'),
         hint: document.getElementById('hint'),
         progressFill: document.getElementById('progress-fill'),
         currentRound: document.getElementById('current-round'),
@@ -22,9 +23,14 @@ document.addEventListener('DOMContentLoaded', function() {
         refContent: document.getElementById('ref-content'),
         modeButtons: document.querySelectorAll('.mode-btn'),
         clearRecordsBtn: document.getElementById('clear-records-btn'),
+        editNameBtn: document.getElementById('edit-name-btn'),
         keyboardRecords: document.getElementById('keyboard-records'),
         morseRecords: document.getElementById('morse-records'),
-        recordTabs: document.querySelectorAll('.record-tab')
+        recordTabs: document.querySelectorAll('.record-tab'),
+        nameModal: document.getElementById('name-modal'),
+        playerNameInput: document.getElementById('player-name'),
+        saveNameBtn: document.getElementById('save-name-btn'),
+        cancelNameBtn: document.getElementById('cancel-name-btn')
     };
 
     let currentMode = 'keyboard';
@@ -32,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let trainingActive = false;
     let currentKey = '';
     let morseSymbol = '';
+    
+    let playerName = '';
     
     let trainingData = {
         targetChar: '',
@@ -92,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function init() {
         loadRecords();
+        loadPlayerName();
         updateReference();
         setupEventListeners();
         updateRecordsDisplay();
@@ -106,6 +115,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function saveRecords() {
         localStorage.setItem('morseTrainerRecords', JSON.stringify(records));
+    }
+
+    function loadPlayerName() {
+        const savedName = localStorage.getItem('morseTrainerPlayerName');
+        if (savedName) {
+            playerName = savedName;
+        } else {
+            setTimeout(showNameModal, 500);
+        }
+    }
+
+    function savePlayerName() {
+        localStorage.setItem('morseTrainerPlayerName', playerName);
     }
 
     function updateRecordsDisplay() {
@@ -139,10 +161,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="record-item ${isCurrent ? 'current' : ''}">
                     <div class="record-rank ${rankClass}">${index + 1}</div>
                     <div class="record-info">
-                        <div style="font-weight: 600; color: var(--text);">
-                            ${record.mode === 'keyboard' ? '⌨️ Клавиатура' : '••--- Морзе'} • ${record.layout === 'ru' ? 'Русская' : 'Английская'}
+                        <div class="record-player">${record.playerName || 'Аноним'}</div>
+                        <div class="record-details">
+                            ${record.mode === 'keyboard' ? '⌨️' : '••---'} • 
+                            ${record.layout === 'ru' ? 'Русская' : 'Английская'} • 
+                            ${formatDate(record.date)}
                         </div>
-                        <div class="record-date">${formatDate(record.date)}</div>
                     </div>
                     <div class="record-score">
                         <div class="record-accuracy">${record.accuracy}%</div>
@@ -169,28 +193,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-function updateReference() {
-    const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-    let html = '<div class="ref-grid">';
-    
-    Object.entries(table).forEach(([code, char]) => {
-        if (char.length === 1 && char.match(/[a-zа-я]/i)) {
-            const formattedCode = code.split('').join(' ');
-            
-            html += `
-                <div class="ref-item">
-                    <div class="ref-char">${char.toUpperCase()}</div>
-                    <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
-                </div>
-            `;
-        }
-    });
-    
-    html += '</div>';
-    elements.refContent.innerHTML = html;
-}
+    function updateReference() {
+        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        let html = '<div class="ref-grid">';
+        
+        Object.entries(table).forEach(([code, char]) => {
+            if (char.length === 1 && char.match(/[a-zа-я]/i)) {
+                const formattedCode = code.split('').join(' ');
+                
+                html += `
+                    <div class="ref-item">
+                        <div class="ref-char">${char.toUpperCase()}</div>
+                        <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                    </div>
+                `;
+            }
+        });
+        
+        html += '</div>';
+        elements.refContent.innerHTML = html;
+    }
 
     function setupEventListeners() {
+        elements.editNameBtn.addEventListener('click', showNameModal);
+        
+        elements.saveNameBtn.addEventListener('click', () => {
+            const name = elements.playerNameInput.value.trim();
+            if (name) {
+                playerName = name;
+                savePlayerName();
+                elements.nameModal.style.display = 'none';
+                updateRecordsDisplay();
+            }
+        });
+        
+        elements.cancelNameBtn.addEventListener('click', () => {
+            elements.nameModal.style.display = 'none';
+            if (!playerName) {
+                playerName = 'Аноним';
+                savePlayerName();
+            }
+        });
+        
         elements.modeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 elements.modeButtons.forEach(b => b.classList.remove('active'));
@@ -282,6 +326,12 @@ function updateReference() {
         document.addEventListener('keydown', handleKeyPress);
     }
 
+    function showNameModal() {
+        elements.playerNameInput.value = playerName || '';
+        elements.nameModal.style.display = 'flex';
+        elements.playerNameInput.focus();
+    }
+
     function handleKeyPress(e) {
         if (!trainingActive || currentMode !== 'keyboard') return;
         
@@ -294,6 +344,7 @@ function updateReference() {
             e.preventDefault();
             currentKey = key;
             elements.typedChar.textContent = currentKey.toUpperCase();
+            elements.typedChar.classList.remove('error');
             
             setTimeout(() => {
                 checkKeyboardAnswer();
@@ -308,6 +359,8 @@ function updateReference() {
         const pressedChar = keyMap[currentKey];
         const targetChar = trainingData.targetChar.toLowerCase();
         
+        elements.errorMessage.style.display = 'none';
+        elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
         
         if (pressedChar === targetChar) {
@@ -325,8 +378,11 @@ function updateReference() {
             }, 1000);
             
         } else {
-            elements.feedback.textContent = `✗ Ошибка! Нужно было: ${targetChar.toUpperCase()}`;
-            elements.feedback.classList.add('error');
+            elements.feedback.textContent = '';
+            elements.errorMessage.textContent = `✗ Ошибка! Нужно было нажать клавишу: ${targetChar.toUpperCase()}`;
+            elements.errorMessage.style.display = 'block';
+            
+            elements.typedChar.classList.add('error');
             
             trainingData.errors++;
             trainingData.streak = 0;
@@ -351,13 +407,8 @@ function updateReference() {
         }
         
         if (correctKey) {
-            const originalText = elements.typedChar.textContent;
-            elements.typedChar.textContent = correctKey.toUpperCase();
-            elements.typedChar.style.color = 'var(--error)';
-            
             setTimeout(() => {
-                elements.typedChar.textContent = originalText;
-                elements.typedChar.style.color = '';
+                elements.errorMessage.style.display = 'none';
                 clearTypedChar();
             }, 2000);
         }
@@ -369,6 +420,8 @@ function updateReference() {
         const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
         const decodedChar = table[morseSymbol];
         
+        elements.errorMessage.style.display = 'none';
+        elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
         
         if (decodedChar) {
@@ -402,11 +455,14 @@ function updateReference() {
         elements.morseText.value = '';
         elements.feedback.className = 'feedback';
         elements.feedback.textContent = currentMode === 'morse' ? 'Введите код Морзе' : '';
+        elements.errorMessage.style.display = 'none';
     }
 
     function clearTypedChar() {
         currentKey = '';
         elements.typedChar.textContent = '—';
+        elements.typedChar.classList.remove('error');
+        elements.errorMessage.style.display = 'none';
     }
 
     function startTraining() {
@@ -432,6 +488,8 @@ function updateReference() {
         elements.feedback.className = 'feedback';
         elements.feedback.textContent = currentMode === 'keyboard' ? 
             'Нажмите клавишу на клавиатуре' : 'Введите код Морзе';
+        
+        elements.errorMessage.style.display = 'none';
         
         updateHint();
         
@@ -509,6 +567,7 @@ function updateReference() {
     function saveRecord(accuracy, time) {
         const record = {
             id: Date.now(),
+            playerName: playerName || 'Аноним',
             mode: currentMode,
             layout: currentLayout,
             date: new Date().toISOString(),
