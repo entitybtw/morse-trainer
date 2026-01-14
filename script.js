@@ -169,24 +169,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateReference() {
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        let html = '<div class="ref-grid">';
-        
-        Object.entries(table).forEach(([code, char]) => {
-            if (char.length === 1 && char.match(/[a-zа-я]/i)) {
-                html += `
-                    <div class="ref-item">
-                        <div class="ref-char">${char.toUpperCase()}</div>
-                        <div class="ref-code">${code.replace(/\./g, '•').replace(/-/g, '—')}</div>
-                    </div>
-                `;
-            }
-        });
-        
-        html += '</div>';
-        elements.refContent.innerHTML = html;
-    }
+function updateReference() {
+    const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+    let html = '<div class="ref-grid">';
+    
+    Object.entries(table).forEach(([code, char]) => {
+        if (char.length === 1 && char.match(/[a-zа-я]/i)) {
+            const formattedCode = code.split('').join(' ');
+            
+            html += `
+                <div class="ref-item">
+                    <div class="ref-char">${char.toUpperCase()}</div>
+                    <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                </div>
+            `;
+        }
+    });
+    
+    html += '</div>';
+    elements.refContent.innerHTML = html;
+}
 
     function setupEventListeners() {
         elements.modeButtons.forEach(btn => {
