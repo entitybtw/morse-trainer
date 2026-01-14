@@ -189,6 +189,11 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.typed-char.error {
+    color: var(--error) !important;
 }
 
 .keyboard-hint {
@@ -265,6 +270,12 @@ h1 {
     color: var(--error);
 }
 
+.feedback-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .feedback {
     background: white;
     border: 2px solid var(--border);
@@ -293,6 +304,24 @@ h1 {
     border-color: var(--error);
     color: var(--error);
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+}
+
+.error-message {
+    background: var(--error-light);
+    border: 2px solid var(--error);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    color: var(--error);
+    font-size: 16px;
+    font-weight: 500;
+    min-height: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .progress-section {
@@ -532,6 +561,30 @@ select:focus {
     gap: 8px;
 }
 
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-btn {
+    padding: 8px 16px;
+    background: var(--accent-bg);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    color: var(--accent);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.edit-btn:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+}
+
 .clear-btn {
     padding: 10px 20px;
     background: var(--error-light);
@@ -636,6 +689,13 @@ select:focus {
     padding: 0 16px;
 }
 
+.record-player {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
 .record-date {
     font-size: 12px;
     color: var(--muted);
@@ -659,7 +719,7 @@ select:focus {
 }
 
 .record-details {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
     font-weight: 500;
 }
@@ -682,6 +742,107 @@ select:focus {
 .no-records svg {
     margin-bottom: 16px;
     opacity: 0.5;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-content h3 {
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.modal-content p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+#player-name {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 20px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#player-name:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(123, 63, 228, 0.1);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn.primary {
+    background: var(--accent);
+    color: white;
+}
+
+.modal-btn.primary:hover {
+    background: var(--accent-dark);
+    transform: translateY(-2px);
+}
+
+.modal-btn.secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.modal-btn.secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 @media (max-width: 768px) {
@@ -742,5 +903,25 @@ select:focus {
     .record-score {
         justify-content: center;
         flex-wrap: wrap;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .edit-btn, .clear-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
     }
 }
