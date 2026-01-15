@@ -52,7 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
         sequence: [],
         started: false,
         startTime: null,
-        endTime: null
+        endTime: null,
+        typedChars: 0,
+        correctChars: 0
     };
 
     let records = {
@@ -169,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="record-score">
-                        <div class="record-accuracy">${record.accuracy}%</div>
+                        <div class="record-accuracy">${record.charAccuracy}%</div>
                         <div class="record-details">
                             <span>${record.correct}</span> из <span>${record.total}</span>
                             ${record.time ? ` • ${record.time}с` : ''}
@@ -345,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentKey = key;
             elements.typedChar.textContent = currentKey.toUpperCase();
             elements.typedChar.classList.remove('error');
+            trainingData.typedChars++;
             
             setTimeout(() => {
                 checkKeyboardAnswer();
@@ -368,6 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.feedback.classList.add('correct');
             
             trainingData.correct++;
+            trainingData.correctChars++;
             trainingData.streak++;
             if (trainingData.streak > trainingData.bestStreak) {
                 trainingData.bestStreak = trainingData.streak;
@@ -379,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } else {
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка!`;
+            elements.errorMessage.textContent = `✗ Ошибка! Пропущена буква ${trainingData.targetChar.toUpperCase()}`;
             elements.errorMessage.style.display = 'block';
             
             elements.typedChar.classList.add('error');
@@ -387,30 +391,34 @@ document.addEventListener('DOMContentLoaded', function() {
             trainingData.errors++;
             trainingData.streak = 0;
             
-            showCorrectKey();
+            setTimeout(() => {
+                elements.errorMessage.style.display = 'none';
+                clearTypedChar();
+                skipRound();
+            }, 2000);
         }
         
         updateStats();
         currentKey = '';
     }
 
-    function showCorrectKey() {
-        const targetChar = trainingData.targetChar.toLowerCase();
-        const keyMap = keyMaps[currentLayout];
+    function skipRound() {
+        trainingData.currentRound++;
+        updateProgress();
         
-        let correctKey = '';
-        for (const [key, value] of Object.entries(keyMap)) {
-            if (value === targetChar) {
-                correctKey = key;
-                break;
+        if (trainingData.currentRound < trainingData.totalRounds) {
+            updateTargetChar();
+            clearTypedChar();
+            clearMorseInput();
+            elements.feedback.textContent = currentMode === 'keyboard' ? 
+                'Нажмите следующий символ' : 'Введите следующий код';
+            elements.feedback.className = 'feedback';
+            
+            if (currentMode === 'morse') {
+                elements.morseText.focus();
             }
-        }
-        
-        if (correctKey) {
-            setTimeout(() => {
-                elements.errorMessage.style.display = 'none';
-                clearTypedChar();
-            }, 2000);
+        } else {
+            finishTraining();
         }
     }
 
@@ -425,13 +433,14 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.feedback.className = 'feedback';
         
         if (decodedChar) {
-            elements.feedback.textContent = `Получен символ: ${decodedChar.toUpperCase()}`;
-            elements.feedback.classList.add('correct');
+            trainingData.typedChars++;
             
             if (decodedChar.toLowerCase() === trainingData.targetChar.toLowerCase()) {
                 elements.feedback.textContent = `✓ Правильно! ${trainingData.targetChar.toUpperCase()} = ${morseSymbol.replace(/\./g, '•').replace(/-/g, '—')}`;
+                elements.feedback.classList.add('correct');
                 
                 trainingData.correct++;
+                trainingData.correctChars++;
                 trainingData.streak++;
                 if (trainingData.streak > trainingData.bestStreak) {
                     trainingData.bestStreak = trainingData.streak;
@@ -443,10 +452,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1000);
                 
                 updateStats();
+            } else {
+                elements.feedback.textContent = `✗ Ошибка! ${decodedChar.toUpperCase()} ≠ ${trainingData.targetChar.toUpperCase()}`;
+                elements.feedback.classList.add('error');
+                elements.feedback.textContent = `✗ Ошибка! Пропущена буква ${trainingData.targetChar.toUpperCase()}`;
+                
+                trainingData.errors++;
+                trainingData.streak = 0;
+                
+                setTimeout(() => {
+                    clearMorseInput();
+                    skipRound();
+                }, 2000);
+                
+                updateStats();
             }
         } else {
-            elements.feedback.textContent = "Неизвестный код Морзе";
-            elements.feedback.classList.add('error');
+            elements.feedback.textContent = "Ввод не завершен";
         }
     }
 
@@ -479,6 +501,8 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingData.errors = 0;
         trainingData.streak = 0;
         trainingData.bestStreak = 0;
+        trainingData.typedChars = 0;
+        trainingData.correctChars = 0;
         
         updateTargetChar();
         updateProgress();
@@ -554,17 +578,19 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingActive = false;
         trainingData.endTime = new Date();
         const timeDiff = (trainingData.endTime - trainingData.startTime) / 1000;
-        const accuracy = Math.round((trainingData.correct / trainingData.totalRounds) * 100);
+        const charAccuracy = trainingData.typedChars > 0 ? 
+            Math.round((trainingData.correctChars / trainingData.typedChars) * 100) : 0;
+        const roundAccuracy = Math.round((trainingData.correct / trainingData.totalRounds) * 100);
         
-        elements.feedback.textContent = `Тренировка завершена! Точность: ${accuracy}% • Время: ${timeDiff.toFixed(1)}с`;
+        elements.feedback.textContent = `Тренировка завершена! Точность по буквам: ${charAccuracy}% (${roundAccuracy}% по раундам) • Время: ${timeDiff.toFixed(1)}с`;
         elements.feedback.className = 'feedback';
         
         elements.hint.textContent = `Нажмите "Перезапустить" чтобы начать заново`;
         
-        saveRecord(accuracy, timeDiff);
+        saveRecord(charAccuracy, roundAccuracy, timeDiff);
     }
 
-    function saveRecord(accuracy, time) {
+    function saveRecord(charAccuracy, roundAccuracy, time) {
         const record = {
             id: Date.now(),
             playerName: playerName || 'Аноним',
@@ -573,15 +599,19 @@ document.addEventListener('DOMContentLoaded', function() {
             date: new Date().toISOString(),
             correct: trainingData.correct,
             total: trainingData.totalRounds,
-            accuracy: accuracy,
+            charAccuracy: charAccuracy,
+            roundAccuracy: roundAccuracy,
             time: time.toFixed(1),
-            bestStreak: trainingData.bestStreak
+            bestStreak: trainingData.bestStreak,
+            typedChars: trainingData.typedChars,
+            correctChars: trainingData.correctChars
         };
         
         records[currentMode].push(record);
         
         records[currentMode].sort((a, b) => {
-            if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
+            if (b.charAccuracy !== a.charAccuracy) return b.charAccuracy - a.charAccuracy;
+            if (b.roundAccuracy !== a.roundAccuracy) return b.roundAccuracy - a.roundAccuracy;
             return a.time - b.time;
         });
         
@@ -605,9 +635,9 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.errorCount.textContent = trainingData.errors;
         elements.streakCount.textContent = trainingData.streak;
         
-        const total = trainingData.correct + trainingData.errors;
-        const accuracy = total > 0 ? Math.round((trainingData.correct / total) * 100) : 0;
-        elements.accuracy.textContent = `${accuracy}%`;
+        const charAccuracy = trainingData.typedChars > 0 ? 
+            Math.round((trainingData.correctChars / trainingData.typedChars) * 100) : 0;
+        elements.accuracy.textContent = `${charAccuracy}%`;
     }
 
     init();
