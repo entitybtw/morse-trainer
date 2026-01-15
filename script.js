@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } else {
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка! Пропущена буква ${trainingData.targetChar.toUpperCase()}`;
+            elements.errorMessage.textContent = `✗ Ошибка!`;
             elements.errorMessage.style.display = 'block';
             
             elements.typedChar.classList.add('error');
