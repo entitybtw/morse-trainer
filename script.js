@@ -453,9 +453,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 updateStats();
             } else {
-                elements.feedback.textContent = `✗ Ошибка! ${decodedChar.toUpperCase()} ≠ ${trainingData.targetChar.toUpperCase()}`;
+                elements.feedback.textContent = `✗ Ошибка!`;
                 elements.feedback.classList.add('error');
-                elements.feedback.textContent = `✗ Ошибка! Пропущена буква ${trainingData.targetChar.toUpperCase()}`;
+                elements.feedback.textContent = `✗ Ошибка!`;
                 
                 trainingData.errors++;
                 trainingData.streak = 0;
