@@ -7,7 +7,7 @@
 
 This trainer is part of my project presented at the  
 VIII Regional Competition of Research and Project Works for School Students  
-**“Vysshiy Pilotazh — Penza 2026”**.
+**“Vishiy Pilotazh — Penza 2026”**.
 
 **https://morse.entitybtw.ru**
 
