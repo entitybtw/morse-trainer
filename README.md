@@ -1,30 +1,32 @@
 # Morse Trainer
 
-**Morse Trainer** — многофункциональный веб-тренажёр азбуки Морзе, созданный в рамках проекта  
-[arduino-nano-morse-keyboard](https://github.com/entitybtw/arduino-nano-morse-keyboard)  
+### [russian readme version / русская версия readme](./README_RU.md)
 
-Этот тренажёр является частью моего проекта, представленного на  
-VIII региональном конкурсе исследовательских и проектных работ школьников  
-**«Высший пилотаж — Пенза 2026»**.
+**Morse Trainer** is a multifunctional web-based Morse code training tool, created as part of the  
+[arduino-nano-morse-keyboard](https://github.com/entitybtw/arduino-nano-morse-keyboard) project.
+
+This trainer is part of my project presented at the  
+VIII Regional Competition of Research and Project Works for School Students  
+**“Vysshiy Pilotazh — Penza 2026”**.
 
 **https://morse.entitybtw.ru**
 
 ---
 
-## Возможности
+## Features
 
-- Система рекордов  
-- Режимы тренировки  
-  - Клавиатура 
-  - Морзе 
-- Поддержка языков  
-  - русский  
-  - английский  
-- Встроенная шпаргалка азбуки Морзе  
+- High score system  
+- Training modes  
+  - Keyboard  
+  - Morse  
+- Language support  
+  - Russian  
+  - English  
+- Built-in Morse code reference cheat sheet  
 
 ---
 
-## Связанные проекты
+## Related projects
 
-- USB адаптер для телеграфного ключа: 
-  https://github.com/entitybtw/arduino-nano-morse-keyboard  
+- USB adapter for a Morse telegraph key:  
+  https://github.com/entitybtw/arduino-nano-morse-keyboard
