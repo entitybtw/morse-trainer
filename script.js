@@ -64,30 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
         morse: []
     };
 
-    const keyMaps = {
-        en: {
-            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
-            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
-            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
-            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
-            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
-            'z': 'z'
-        },
-        ru: {
-            'а': 'а', 'б': 'б', 'в': 'в', 'г': 'г', 'д': 'д',
-            'е': 'е', 'ж': 'ж', 'з': 'з', 'и': 'и',
-            'й': 'й', 'к': 'к', 'л': 'л', 'м': 'м', 'н': 'н',
-            'о': 'о', 'п': 'п', 'р': 'р', 'с': 'с', 'т': 'т',
-            'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
-            'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
-            'э': 'э', 'ю': 'ю', 'я': 'я'
-        },
-        other: {
-            "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
-            "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
-        }
-    };
-
     const morseTables = {
         en: {
             ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
@@ -108,6 +84,31 @@ document.addEventListener('DOMContentLoaded', function() {
             "-----": "0", ".----": "1", "..---": "2", "...--": "3", "....-": "4", 
             ".....": "5", "-....": "6", "--...": "7", "---..": "8", "----.": "9"
         }
+    };
+
+    const allKeyMaps = {
+        en: {
+            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
+            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
+            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
+            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
+            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
+            'z': 'z'
+        },
+        ru: {
+            'а': 'а', 'б': 'б', 'в': 'в', 'г': 'г', 'д': 'д',
+            'е': 'е', 'ж': 'ж', 'з': 'з', 'и': 'и',
+            'й': 'й', 'к': 'к', 'л': 'л', 'м': 'м', 'н': 'н',
+            'о': 'о', 'п': 'п', 'р': 'р', 'с': 'с', 'т': 'т',
+            'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
+            'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
+            'э': 'э', 'ю': 'ю', 'я': 'я'
+        }
+    };
+
+    const numberKeyMap = {
+        '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
+        '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
     };
 
     function init() {
@@ -376,9 +377,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
         
         const key = e.key.toLowerCase();
-        const keyMap = keyMaps[currentLayout];
+        let keyMap = {};
         
-        if (keyMap && keyMap[key]) {
+        if (numberKeyMap[key]) {
+            keyMap = numberKeyMap;
+        } 
+        else if (allKeyMaps[currentLayout] && allKeyMaps[currentLayout][key]) {
+            keyMap = allKeyMaps[currentLayout];
+        }
+        
+        if (keyMap[key]) {
             e.preventDefault();
             currentKey = key;
             elements.typedChar.textContent = currentKey.toUpperCase();
@@ -394,8 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkKeyboardAnswer() {
         if (!currentKey || !trainingActive) return;
         
-        const keyMap = keyMaps[currentLayout];
-        const pressedChar = keyMap[currentKey];
+        let pressedChar = currentKey;
         const targetChar = trainingData.targetChar.toLowerCase();
         
         elements.errorMessage.style.display = 'none';
@@ -577,19 +584,19 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(symbolMode) {
             case 'letters':
                 availableSymbols = Object.values(letterTable)
-                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                    .filter(c => c.length === 1);
                 break;
                 
             case 'numbers':
                 availableSymbols = Object.values(numberTable)
-                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    .filter(c => c.length === 1);
                 break;
                 
             case 'letters_numbers':
                 const letters = Object.values(letterTable)
-                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                    .filter(c => c.length === 1);
                 const numbers = Object.values(numberTable)
-                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    .filter(c => c.length === 1);
                 availableSymbols = [...letters, ...numbers];
                 break;
         }
