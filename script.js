@@ -64,6 +64,30 @@ document.addEventListener('DOMContentLoaded', function() {
         morse: []
     };
 
+    const keyMaps = {
+        en: {
+            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
+            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
+            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
+            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
+            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
+            'z': 'z'
+        },
+        ru: {
+            'а': 'а', 'б': 'б', 'в': 'в', 'г': 'г', 'д': 'д',
+            'е': 'е', 'ж': 'ж', 'з': 'з', 'и': 'и',
+            'й': 'й', 'к': 'к', 'л': 'л', 'м': 'м', 'н': 'н',
+            'о': 'о', 'п': 'п', 'р': 'р', 'с': 'с', 'т': 'т',
+            'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
+            'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
+            'э': 'э', 'ю': 'ю', 'я': 'я'
+        },
+        other: {
+            "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
+            "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
+        }
+    };
+
     const morseTables = {
         en: {
             ".-": "a", "-...": "b", "-.-.": "c", "-..": "d", ".": "e",
@@ -84,31 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
             "-----": "0", ".----": "1", "..---": "2", "...--": "3", "....-": "4", 
             ".....": "5", "-....": "6", "--...": "7", "---..": "8", "----.": "9"
         }
-    };
-
-    const allKeyMaps = {
-        en: {
-            'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
-            'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i', 'j': 'j',
-            'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
-            'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
-            'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
-            'z': 'z'
-        },
-        ru: {
-            'а': 'а', 'б': 'б', 'в': 'в', 'г': 'г', 'д': 'д',
-            'е': 'е', 'ж': 'ж', 'з': 'з', 'и': 'и',
-            'й': 'й', 'к': 'к', 'л': 'л', 'м': 'м', 'н': 'н',
-            'о': 'о', 'п': 'п', 'р': 'р', 'с': 'с', 'т': 'т',
-            'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
-            'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
-            'э': 'э', 'ю': 'ю', 'я': 'я'
-        }
-    };
-
-    const numberKeyMap = {
-        '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
-        '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
     };
 
     function init() {
@@ -371,38 +370,39 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.playerNameInput.focus();
     }
 
-    function handleKeyPress(e) {
-        if (!trainingActive || currentMode !== 'keyboard') return;
-        
-        if (e.ctrlKey || e.altKey || e.metaKey) return;
-        
-        const key = e.key.toLowerCase();
-        let keyMap = {};
-        
-        if (numberKeyMap[key]) {
-            keyMap = numberKeyMap;
-        } 
-        else if (allKeyMaps[currentLayout] && allKeyMaps[currentLayout][key]) {
-            keyMap = allKeyMaps[currentLayout];
-        }
-        
-        if (keyMap[key]) {
-            e.preventDefault();
-            currentKey = key;
-            elements.typedChar.textContent = currentKey.toUpperCase();
-            elements.typedChar.classList.remove('error');
-            trainingData.typedChars++;
-            
-            setTimeout(() => {
-                checkKeyboardAnswer();
-            }, 100);
-        }
+function handleKeyPress(e) {
+    if (!trainingActive || currentMode !== 'keyboard') return
+    if (e.ctrlKey || e.altKey || e.metaKey) return
+
+    const key = e.key.toLowerCase()
+    let keyMap = {}
+
+    if (symbolMode === 'letters') {
+        keyMap = keyMaps[currentLayout]
+    } else if (symbolMode === 'numbers') {
+        keyMap = keyMaps.other
+    } else if (symbolMode === 'letters_numbers') {
+        keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
     }
+
+    if (keyMap[key]) {
+        e.preventDefault()
+        currentKey = key
+        elements.typedChar.textContent = key.toUpperCase()
+        elements.typedChar.classList.remove('error')
+        trainingData.typedChars++
+
+        setTimeout(() => {
+            checkKeyboardAnswer()
+        }, 100)
+    }
+}
 
     function checkKeyboardAnswer() {
         if (!currentKey || !trainingActive) return;
         
-        let pressedChar = currentKey;
+        const keyMap = keyMaps[currentLayout];
+        const pressedChar = keyMap[currentKey];
         const targetChar = trainingData.targetChar.toLowerCase();
         
         elements.errorMessage.style.display = 'none';
@@ -584,19 +584,19 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(symbolMode) {
             case 'letters':
                 availableSymbols = Object.values(letterTable)
-                    .filter(c => c.length === 1);
+                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
                 break;
                 
             case 'numbers':
                 availableSymbols = Object.values(numberTable)
-                    .filter(c => c.length === 1);
+                    .filter(c => c.length === 1 && c.match(/[0-9]/));
                 break;
                 
             case 'letters_numbers':
                 const letters = Object.values(letterTable)
-                    .filter(c => c.length === 1);
+                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
                 const numbers = Object.values(numberTable)
-                    .filter(c => c.length === 1);
+                    .filter(c => c.length === 1 && c.match(/[0-9]/));
                 availableSymbols = [...letters, ...numbers];
                 break;
         }
