@@ -398,52 +398,61 @@ function handleKeyPress(e) {
     }
 }
 
-    function checkKeyboardAnswer() {
-        if (!currentKey || !trainingActive) return;
-        
-        const keyMap = keyMaps[currentLayout];
-        const pressedChar = keyMap[currentKey];
-        const targetChar = trainingData.targetChar.toLowerCase();
-        
-        elements.errorMessage.style.display = 'none';
-        elements.errorMessage.textContent = '';
-        elements.feedback.className = 'feedback';
-        
-        if (pressedChar === targetChar) {
-            elements.feedback.textContent = `✓ Правильно! Нажали: ${currentKey.toUpperCase()}`;
-            elements.feedback.classList.add('correct');
-            
-            trainingData.correct++;
-            trainingData.correctChars++;
-            trainingData.streak++;
-            if (trainingData.streak > trainingData.bestStreak) {
-                trainingData.bestStreak = trainingData.streak;
-            }
-            
-            setTimeout(() => {
-                nextRound();
-            }, 1000);
-            
-        } else {
-            elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка!`;
-            elements.errorMessage.style.display = 'block';
-            
-            elements.typedChar.classList.add('error');
-            
-            trainingData.errors++;
-            trainingData.streak = 0;
-            
-            setTimeout(() => {
-                elements.errorMessage.style.display = 'none';
-                clearTypedChar();
-                skipRound();
-            }, 2000);
-        }
-        
-        updateStats();
-        currentKey = '';
+function checkKeyboardAnswer() {
+    if (!currentKey || !trainingActive) return
+
+    let keyMap = {}
+
+    if (symbolMode === 'letters') {
+        keyMap = keyMaps[currentLayout]
+    } else if (symbolMode === 'numbers') {
+        keyMap = keyMaps.other
+    } else if (symbolMode === 'letters_numbers') {
+        keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
     }
+
+    const pressedChar = keyMap[currentKey]
+    const targetChar = trainingData.targetChar.toLowerCase()
+
+    elements.errorMessage.style.display = 'none'
+    elements.errorMessage.textContent = ''
+    elements.feedback.className = 'feedback'
+
+    if (pressedChar === targetChar) {
+        elements.feedback.textContent = `✓ Правильно! Нажали: ${currentKey.toUpperCase()}`
+        elements.feedback.classList.add('correct')
+
+        trainingData.correct++
+        trainingData.correctChars++
+        trainingData.streak++
+
+        if (trainingData.streak > trainingData.bestStreak) {
+            trainingData.bestStreak = trainingData.streak
+        }
+
+        setTimeout(() => {
+            nextRound()
+        }, 1000)
+    } else {
+        elements.feedback.textContent = ''
+        elements.errorMessage.textContent = `✗ Ошибка!`
+        elements.errorMessage.style.display = 'block'
+
+        elements.typedChar.classList.add('error')
+
+        trainingData.errors++
+        trainingData.streak = 0
+
+        setTimeout(() => {
+            elements.errorMessage.style.display = 'none'
+            clearTypedChar()
+            skipRound()
+        }, 2000)
+    }
+
+    updateStats()
+    currentKey = ''
+}
 
     function skipRound() {
         trainingData.currentRound++;
