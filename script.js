@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         accuracy: document.getElementById('accuracy'),
         startBtn: document.getElementById('start-btn'),
         layoutSelect: document.getElementById('layout-select'),
+        symbolModeSelect: document.getElementById('symbol-mode-select'),
         roundsSelect: document.getElementById('rounds-select'),
         keyboardInput: document.getElementById('keyboard-input'),
         morseInput: document.getElementById('morse-input'),
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentMode = 'keyboard';
     let currentLayout = 'en';
+    let symbolMode = 'letters';
     let trainingActive = false;
     let currentKey = '';
     let morseSymbol = '';
@@ -69,9 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o',
             'p': 'p', 'q': 'q', 'r': 'r', 's': 's', 't': 't',
             'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y',
-            'z': 'z', "0": "0", "1": "1", 
-            "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", 
-            "7": "7", "8": "8", "9": "9"
+            'z': 'z'
         },
         ru: {
             'а': 'а', 'б': 'б', 'в': 'в', 'г': 'г', 'д': 'д',
@@ -80,9 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'о': 'о', 'п': 'п', 'р': 'р', 'с': 'с', 'т': 'т',
             'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
             'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
-            'э': 'э', 'ю': 'ю', 'я': 'я', "0": "0", "1": "1", 
-            "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", 
-            "7": "7", "8": "8", "9": "9"
+            'э': 'э', 'ю': 'ю', 'я': 'я'
+        },
+        other: {
+            "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
+            "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
         }
     };
 
@@ -93,18 +95,18 @@ document.addEventListener('DOMContentLoaded', function() {
             "-.-": "k", ".-..": "l", "--": "m", "-.": "n", "---": "o",
             ".--.": "p", "--.-": "q", ".-.": "r", "...": "s", "-": "t",
             "..-": "u", "...-": "v", ".--": "w", "-..-": "x", "-.--": "y",
-            "--..": "z", "-----": "0", ".----": "1", "..---": "2", "...--": "3",
-            "....-": "4", ".....": "5", "-....": "6", "--...": "7", "---..": "8",
-            "----.": "9"
+            "--..": "z"
         },
         ru: {
             ".-": "а", "-...": "б", ".--": "в", "--.": "г", "-..": "д", ".": "е",
             "...-": "ж", "--..": "з", "..": "и", ".---": "й", "-.-": "к", ".-..": "л",
             "--": "м", "-.": "н", "---": "о", ".--.": "п", ".-.": "р", "...": "с", "-": "т", "..-": "у", "..-.": "ф",
             "....": "х", "-.-.": "ц", "---.": "ч", "----": "ш", "--.-": "щ", ".--.-.": "ъ",
-            "-.--": "ы", "-..-": "ь", "...-...": "э", "..--": "ю", ".-.-": "я", "-----": "0", ".----": "1", "..---": "2", "...--": "3",
-            "....-": "4", ".....": "5", "-....": "6", "--...": "7", "---..": "8",
-            "----.": "9"
+            "-.--": "ы", "-..-": "ь", "...-...": "э", "..--": "ю", ".-.-": "я"
+        },
+        other: {
+            "-----": "0", ".----": "1", "..---": "2", "...--": "3", "....-": "4", 
+            ".....": "5", "-....": "6", "--...": "7", "---..": "8", "----.": "9"
         }
     };
 
@@ -166,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modeRecords.forEach((record, index) => {
             const isCurrent = record.id === trainingData.currentRecordId;
             const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+            const symbolModeText = record.symbolMode === 'letters' ? 'Буквы' : record.symbolMode === 'numbers' ? 'Цифры' : 'Буквы+Цифры';
             
             html += `
                 <div class="record-item ${isCurrent ? 'current' : ''}">
@@ -175,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="record-details">
                             ${record.mode === 'keyboard' ? '⌨️' : '••---'} • 
                             ${record.layout === 'ru' ? 'Русская' : 'Английская'} • 
+                            ${symbolModeText} • 
                             ${formatDate(record.date)}
                         </div>
                     </div>
@@ -204,11 +208,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateReference() {
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        let table = {};
+        const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        const numberTable = morseTables.other;
+        
+        switch(symbolMode) {
+            case 'letters':
+                table = letterTable;
+                break;
+            case 'numbers':
+                table = numberTable;
+                break;
+            case 'letters_numbers':
+                table = {...letterTable, ...numberTable};
+                break;
+        }
+        
         let html = '<div class="ref-grid">';
         
         Object.entries(table).forEach(([code, char]) => {
-            if (char.length === 1 && char.match(/[a-zа-я]/i)) {
+            if (char.length === 1) {
                 const formattedCode = code.split('').join(' ');
                 
                 html += `
@@ -298,6 +317,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         elements.layoutSelect.addEventListener('change', () => {
             currentLayout = elements.layoutSelect.value;
+            updateReference();
+            if (trainingActive) {
+                generateSequence();
+                updateTargetChar();
+            }
+        });
+
+        elements.symbolModeSelect.addEventListener('change', () => {
+            symbolMode = elements.symbolModeSelect.value;
             updateReference();
             if (trainingActive) {
                 generateSequence();
@@ -434,7 +462,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
         
         const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const decodedChar = table[morseSymbol];
+        const numberTable = morseTables.other;
+        const fullTable = {...table, ...numberTable};
+        const decodedChar = fullTable[morseSymbol];
         
         elements.errorMessage.style.display = 'none';
         elements.errorMessage.textContent = '';
@@ -499,6 +529,7 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingActive = true;
         trainingData.started = true;
         currentLayout = elements.layoutSelect.value;
+        symbolMode = elements.symbolModeSelect.value;
         trainingData.totalRounds = parseInt(elements.roundsSelect.value);
         trainingData.startTime = new Date();
         
@@ -538,11 +569,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateSequence() {
         trainingData.sequence = [];
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const chars = Object.values(table).filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+        let availableSymbols = [];
+        
+        const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+        const numberTable = morseTables.other;
+        
+        switch(symbolMode) {
+            case 'letters':
+                availableSymbols = Object.values(letterTable)
+                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                break;
+                
+            case 'numbers':
+                availableSymbols = Object.values(numberTable)
+                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                break;
+                
+            case 'letters_numbers':
+                const letters = Object.values(letterTable)
+                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                const numbers = Object.values(numberTable)
+                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                availableSymbols = [...letters, ...numbers];
+                break;
+        }
         
         for (let i = 0; i < trainingData.totalRounds; i++) {
-            const randomChar = chars[Math.floor(Math.random() * chars.length)];
+            const randomChar = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
             trainingData.sequence.push(randomChar);
         }
     }
@@ -603,6 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id: Date.now(),
             playerName: playerName || 'Аноним',
             mode: currentMode,
+            symbolMode: symbolMode,
             layout: currentLayout,
             date: new Date().toISOString(),
             correct: trainingData.correct,
