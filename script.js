@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const elements = {
         targetChar: document.getElementById('target-char'),
-        typedChar: document.getElementById('typed-char'),
         feedback: document.getElementById('feedback'),
         errorMessage: document.getElementById('error-message'),
         hint: document.getElementById('hint'),
@@ -82,16 +81,18 @@ document.addEventListener('DOMContentLoaded', function() {
             'у': 'у', 'ф': 'ф', 'х': 'х', 'ц': 'ц', 'ч': 'ч',
             'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
             'э': 'э', 'ю': 'ю', 'я': 'я'
-        },
-        numbers: {
-            "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
-            "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
-        },
-        punctuation: {
-            ".": ".", ",": ",", "…": "…", "?": "?", "!": "!", 
-            "\"": "\"", "-": "-", "'": "'", "(": "(", ")": ")", 
-            ":": ":", ";": ";", "/": "/", "=": "=", "&": "&", "@": "@"
         }
+    };
+
+    const keyMapsNumbers = {
+        "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
+        "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
+    };
+
+    const keyMapsPunctuation = {
+        ".": ".", ",": ",", "…": "…", "?": "?", "!": "!", 
+        "\"": "\"", "-": "-", "'": "'", "(": "(", ")": ")", 
+        ":": ":", ";": ";", "/": "/", "=": "=", "&": "&", "@": "@"
     };
 
     const morseTables = {
@@ -181,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modeRecords.forEach((record, index) => {
             const isCurrent = record.id === trainingData.currentRecordId;
             const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
-            const symbolModeText = record.symbolMode === 'letters' ? 'Буквы' : record.symbolMode === 'numbers' ? 'Цифры' : record.symbolMode === 'punctuation' ? 'Знаки препинания' : record.symbolMode === 'punctuation_numbers' ? 'Знаки+Цифры' : record.symbolMode === 'punctuation_letters' ? 'Знаки+Буквы' : record.symbolMode === 'all' ? 'Все символы' : 'Буквы+Цифры';
+            const symbolModeText = getSymbolModeText(record.symbolMode);
             
             html += `
                 <div class="record-item ${isCurrent ? 'current' : ''}">
@@ -209,6 +210,19 @@ document.addEventListener('DOMContentLoaded', function() {
         listElement.innerHTML = html;
     }
 
+    function getSymbolModeText(symbolMode) {
+        switch(symbolMode) {
+            case 'letters': return 'Буквы';
+            case 'numbers': return 'Цифры';
+            case 'letters_numbers': return 'Буквы+Цифры';
+            case 'punctuation': return 'Знаки препинания';
+            case 'punctuation_numbers': return 'Знаки+Цифры';
+            case 'punctuation_letters': return 'Знаки+Буквы';
+            case 'all': return 'Все символы';
+            default: return 'Буквы+Цифры';
+        }
+    }
+
     function formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('ru-RU', {
@@ -226,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const numberTable = morseTables.numbers;
         const punctuationTable = morseTables.punctuation;
         
+        const isEnglish = currentLayout === 'en';
+        
         switch(symbolMode) {
             case 'letters':
                 table = letterTable;
@@ -237,16 +253,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 table = {...letterTable, ...numberTable};
                 break;
             case 'punctuation':
-                table = punctuationTable;
+                if (isEnglish) {
+                    table = punctuationTable;
+                } else {
+                    table = {};
+                }
                 break;
             case 'punctuation_numbers':
-                table = {...punctuationTable, ...numberTable};
+                if (isEnglish) {
+                    table = {...punctuationTable, ...numberTable};
+                } else {
+                    table = numberTable;
+                }
                 break;
             case 'punctuation_letters':
-                table = {...punctuationTable, ...letterTable};
+                if (isEnglish) {
+                    table = {...punctuationTable, ...letterTable};
+                } else {
+                    table = letterTable;
+                }
                 break;
             case 'all':
-                table = {...letterTable, ...numberTable, ...punctuationTable};
+                if (isEnglish) {
+                    table = {...letterTable, ...numberTable, ...punctuationTable};
+                } else {
+                    table = {...letterTable, ...numberTable};
+                }
                 break;
         }
         
@@ -325,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let value = e.target.value;
             
             if (value.length > 0) {
-                currentKey = value.toLowerCase().charAt(0);
+                currentKey = value.charAt(0);
                 
                 setTimeout(() => {
                     checkKeyboardAnswer();
@@ -371,6 +403,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         elements.layoutSelect.addEventListener('change', () => {
             currentLayout = elements.layoutSelect.value;
+            
+            const isEnglish = currentLayout === 'en';
+            const punctuationOptions = ['punctuation', 'punctuation_numbers', 'punctuation_letters', 'all'];
+            
+            const currentOption = elements.symbolModeSelect.value;
+            
+            if (!isEnglish && punctuationOptions.includes(currentOption)) {
+                elements.symbolModeSelect.value = 'letters';
+                symbolMode = 'letters';
+            }
+            
             updateReference();
             if (trainingActive) {
                 generateSequence();
@@ -379,7 +422,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         elements.symbolModeSelect.addEventListener('change', () => {
-            symbolMode = elements.symbolModeSelect.value;
+            const newSymbolMode = elements.symbolModeSelect.value;
+            const isEnglish = currentLayout === 'en';
+            const punctuationOptions = ['punctuation', 'punctuation_numbers', 'punctuation_letters', 'all'];
+            
+            if (!isEnglish && punctuationOptions.includes(newSymbolMode)) {
+                alert('Режимы с знаками препинания доступны только для английской раскладки!');
+                elements.symbolModeSelect.value = symbolMode;
+                return;
+            }
+            
+            symbolMode = newSymbolMode;
             updateReference();
             if (trainingActive) {
                 generateSequence();
@@ -425,52 +478,84 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkKeyboardAnswer() {
         if (!currentKey || !trainingActive) return;
 
-        let keyMap = {};
-        let availableSymbols = [];
+        const isEnglish = currentLayout === 'en';
+        let expectedChar = trainingData.targetChar.toLowerCase();
+        let pressedChar = currentKey.toLowerCase();
 
+        let isValidChar = false;
+        
         switch(symbolMode) {
             case 'letters':
-                keyMap = keyMaps[currentLayout];
+                if (currentLayout === 'en') {
+                    isValidChar = keyMaps.en[pressedChar] !== undefined;
+                } else {
+                    isValidChar = keyMaps.ru[pressedChar] !== undefined;
+                }
                 break;
+                
             case 'numbers':
-                keyMap = keyMaps.numbers;
+                isValidChar = keyMapsNumbers[pressedChar] !== undefined;
                 break;
+                
             case 'letters_numbers':
-                keyMap = { ...keyMaps[currentLayout], ...keyMaps.numbers };
+                if (currentLayout === 'en') {
+                    isValidChar = (keyMaps.en[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
+                } else {
+                    isValidChar = (keyMaps.ru[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
+                }
                 break;
+                
             case 'punctuation':
-                keyMap = keyMaps.punctuation;
+                if (isEnglish) {
+                    isValidChar = keyMapsPunctuation[pressedChar] !== undefined;
+                }
                 break;
+                
             case 'punctuation_numbers':
-                keyMap = { ...keyMaps.punctuation, ...keyMaps.numbers };
+                if (isEnglish) {
+                    isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
+                }
                 break;
+                
             case 'punctuation_letters':
-                keyMap = { ...keyMaps.punctuation, ...keyMaps[currentLayout] };
+                if (isEnglish) {
+                    isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMaps.en[pressedChar] !== undefined);
+                }
                 break;
+                
             case 'all':
-                keyMap = { ...keyMaps[currentLayout], ...keyMaps.numbers, ...keyMaps.punctuation };
+                if (isEnglish) {
+                    isValidChar = (keyMaps.en[pressedChar] !== undefined) || 
+                                  (keyMapsNumbers[pressedChar] !== undefined) || 
+                                  (keyMapsPunctuation[pressedChar] !== undefined);
+                } else {
+                    isValidChar = (keyMaps.ru[pressedChar] !== undefined) || 
+                                  (keyMapsNumbers[pressedChar] !== undefined);
+                }
                 break;
         }
 
-        const pressedChar = currentKey;
-        const targetChar = trainingData.targetChar.toLowerCase();
-
-        let normalizedPressedChar = pressedChar;
-        if (pressedChar === '?' || pressedChar === '!' || pressedChar === '.' || 
-            pressedChar === ',' || pressedChar === '-' || pressedChar === '(' ||
-            pressedChar === ')' || pressedChar === ':' || pressedChar === ';' ||
-            pressedChar === '/' || pressedChar === '=' || pressedChar === '&' ||
-            pressedChar === '@' || pressedChar === '"' || pressedChar === "'") {
-            normalizedPressedChar = pressedChar;
+        if (!isValidChar) {
+            elements.feedback.textContent = '';
+            elements.errorMessage.textContent = `Недопустимый символ для выбранного режима!`;
+            elements.errorMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                elements.keyboardInputField.value = '';
+                elements.errorMessage.style.display = 'none';
+                clearTypedChar();
+                currentKey = '';
+            }, 1000);
+            return;
         }
 
-        elements.keyboardInputField.value = normalizedPressedChar.toUpperCase();
+        elements.keyboardInputField.value = pressedChar.toUpperCase();
         elements.errorMessage.style.display = 'none';
         elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
 
-        if (normalizedPressedChar === targetChar) {
-            elements.feedback.textContent = `✓ Правильно! Введено: ${normalizedPressedChar.toUpperCase()}`;
+        if (pressedChar === expectedChar) {
+            elements.feedback.textContent = `✓ Правильно! Введено: ${pressedChar.toUpperCase()}`;
             elements.feedback.classList.add('correct');
 
             trainingData.correct++;
@@ -486,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         } else {
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${targetChar.toUpperCase()}`;
+            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${expectedChar.toUpperCase()}`;
             elements.errorMessage.style.display = 'block';
 
             trainingData.errors++;
@@ -523,32 +608,46 @@ document.addEventListener('DOMContentLoaded', function() {
     function autoCheckMorse() {
         if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
         
-        const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const numberTable = morseTables.numbers;
-        const punctuationTable = morseTables.punctuation;
+        const isEnglish = currentLayout === 'en';
         let fullTable = {};
         
         switch(symbolMode) {
             case 'letters':
-                fullTable = table;
+                fullTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
                 break;
             case 'numbers':
-                fullTable = numberTable;
+                fullTable = morseTables.numbers;
                 break;
             case 'letters_numbers':
-                fullTable = {...table, ...numberTable};
+                const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
+                fullTable = {...letterTable, ...morseTables.numbers};
                 break;
             case 'punctuation':
-                fullTable = punctuationTable;
+                if (isEnglish) {
+                    fullTable = morseTables.punctuation;
+                }
                 break;
             case 'punctuation_numbers':
-                fullTable = {...punctuationTable, ...numberTable};
+                if (isEnglish) {
+                    fullTable = {...morseTables.punctuation, ...morseTables.numbers};
+                } else {
+                    fullTable = morseTables.numbers;
+                }
                 break;
             case 'punctuation_letters':
-                fullTable = {...punctuationTable, ...table};
+                if (isEnglish) {
+                    const letterTable = morseTables.en;
+                    fullTable = {...morseTables.punctuation, ...letterTable};
+                } else {
+                    fullTable = morseTables.ru;
+                }
                 break;
             case 'all':
-                fullTable = {...table, ...numberTable, ...punctuationTable};
+                if (isEnglish) {
+                    fullTable = {...morseTables.en, ...morseTables.numbers, ...morseTables.punctuation};
+                } else {
+                    fullTable = {...morseTables.ru, ...morseTables.numbers};
+                }
                 break;
         }
         
@@ -579,9 +678,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 updateStats();
             } else {
-                elements.feedback.textContent = `✗ Ошибка!`;
+                elements.feedback.textContent = `✗ Ошибка! Ожидалось: ${trainingData.targetChar.toUpperCase()}`;
                 elements.feedback.classList.add('error');
-                elements.feedback.textContent = `✗ Ошибка!`;
                 
                 trainingData.errors++;
                 trainingData.streak = 0;
@@ -653,16 +751,15 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingData.sequence = [];
         let availableSymbols = [];
         
+        const isEnglish = currentLayout === 'en';
         const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
         const numberTable = morseTables.numbers;
         const punctuationTable = morseTables.punctuation;
         
-        const isEnglish = currentLayout === 'en';
-        
         switch(symbolMode) {
             case 'letters':
                 availableSymbols = Object.values(letterTable)
-                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                    .filter(c => c.length === 1 && ((isEnglish && c.match(/[a-z]/i)) || (!isEnglish && c.match(/[а-я]/i))));
                 break;
                 
             case 'numbers':
@@ -672,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             case 'letters_numbers':
                 const letters = Object.values(letterTable)
-                    .filter(c => c.length === 1 && c.match(/[a-zа-я]/i));
+                    .filter(c => c.length === 1 && ((isEnglish && c.match(/[a-z]/i)) || (!isEnglish && c.match(/[а-я]/i))));
                 const numbers = Object.values(numberTable)
                     .filter(c => c.length === 1 && c.match(/[0-9]/));
                 availableSymbols = [...letters, ...numbers];
@@ -737,8 +834,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         for (let i = 0; i < trainingData.totalRounds; i++) {
-            const randomChar = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
-            trainingData.sequence.push(randomChar);
+            if (availableSymbols.length > 0) {
+                const randomChar = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
+                trainingData.sequence.push(randomChar);
+            }
         }
     }
 
