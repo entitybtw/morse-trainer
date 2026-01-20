@@ -83,9 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
             'ш': 'ш', 'щ': 'щ', 'ъ': 'ъ', 'ы': 'ы', 'ь': 'ь',
             'э': 'э', 'ю': 'ю', 'я': 'я'
         },
-        other: {
+        numbers: {
             "0": "0", "1": "1", "2": "2", "3": "3", "4": "4",
             "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
+        },
+        punctuation: {
+            ".": ".", ",": ",", "…": "…", "?": "?", "!": "!", 
+            "\"": "\"", "-": "-", "'": "'", "(": "(", ")": ")", 
+            ":": ":", ";": ";", "/": "/", "=": "=", "&": "&", "@": "@"
         }
     };
 
@@ -105,9 +110,16 @@ document.addEventListener('DOMContentLoaded', function() {
             "....": "х", "-.-.": "ц", "---.": "ч", "----": "ш", "--.-": "щ", ".--.-.": "ъ",
             "-.--": "ы", "-..-": "ь", "...-...": "э", "..--": "ю", ".-.-": "я"
         },
-        other: {
+        numbers: {
             "-----": "0", ".----": "1", "..---": "2", "...--": "3", "....-": "4", 
             ".....": "5", "-....": "6", "--...": "7", "---..": "8", "----.": "9"
+        },
+        punctuation: {
+            ".-.-.-": ".", "--..--": ",", "---...": "…",
+            "..--..": "?", "-.-.--": "!", ".----.": "\"", "-....-": "-", 
+            ".-..-.": "'", "-.--.": "(", "-.--.-": ")", 
+            "...-..-": ":", "...-.-": ";", "..-.-.": "/", 
+            "-...-": "=", ".-...": "&", "...-.": "@"
         }
     };
 
@@ -169,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modeRecords.forEach((record, index) => {
             const isCurrent = record.id === trainingData.currentRecordId;
             const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
-            const symbolModeText = record.symbolMode === 'letters' ? 'Буквы' : record.symbolMode === 'numbers' ? 'Цифры' : 'Буквы+Цифры';
+            const symbolModeText = record.symbolMode === 'letters' ? 'Буквы' : record.symbolMode === 'numbers' ? 'Цифры' : record.symbolMode === 'punctuation' ? 'Знаки препинания' : record.symbolMode === 'punctuation_numbers' ? 'Знаки+Цифры' : record.symbolMode === 'punctuation_letters' ? 'Знаки+Буквы' : record.symbolMode === 'all' ? 'Все символы' : 'Буквы+Цифры';
             
             html += `
                 <div class="record-item ${isCurrent ? 'current' : ''}">
@@ -211,7 +223,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateReference() {
         let table = {};
         const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const numberTable = morseTables.other;
+        const numberTable = morseTables.numbers;
+        const punctuationTable = morseTables.punctuation;
         
         switch(symbolMode) {
             case 'letters':
@@ -223,6 +236,18 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'letters_numbers':
                 table = {...letterTable, ...numberTable};
                 break;
+            case 'punctuation':
+                table = punctuationTable;
+                break;
+            case 'punctuation_numbers':
+                table = {...punctuationTable, ...numberTable};
+                break;
+            case 'punctuation_letters':
+                table = {...punctuationTable, ...letterTable};
+                break;
+            case 'all':
+                table = {...letterTable, ...numberTable, ...punctuationTable};
+                break;
         }
         
         let html = '<div class="ref-grid">';
@@ -230,10 +255,13 @@ document.addEventListener('DOMContentLoaded', function() {
         Object.entries(table).forEach(([code, char]) => {
             if (char.length === 1) {
                 const formattedCode = code.split('').join(' ');
+                const displayChar = char === '"' ? '&quot;' : 
+                                   char === '&' ? '&amp;' : 
+                                   char;
                 
                 html += `
                     <div class="ref-item">
-                        <div class="ref-char">${char.toUpperCase()}</div>
+                        <div class="ref-char">${displayChar.toUpperCase()}</div>
                         <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
                     </div>
                 `;
@@ -397,57 +425,83 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkKeyboardAnswer() {
         if (!currentKey || !trainingActive) return;
 
-        let keyMap = {}
+        let keyMap = {};
+        let availableSymbols = [];
 
-        if (symbolMode === 'letters') {
-            keyMap = keyMaps[currentLayout]
-        } else if (symbolMode === 'numbers') {
-            keyMap = keyMaps.other
-        } else if (symbolMode === 'letters_numbers') {
-            keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
+        switch(symbolMode) {
+            case 'letters':
+                keyMap = keyMaps[currentLayout];
+                break;
+            case 'numbers':
+                keyMap = keyMaps.numbers;
+                break;
+            case 'letters_numbers':
+                keyMap = { ...keyMaps[currentLayout], ...keyMaps.numbers };
+                break;
+            case 'punctuation':
+                keyMap = keyMaps.punctuation;
+                break;
+            case 'punctuation_numbers':
+                keyMap = { ...keyMaps.punctuation, ...keyMaps.numbers };
+                break;
+            case 'punctuation_letters':
+                keyMap = { ...keyMaps.punctuation, ...keyMaps[currentLayout] };
+                break;
+            case 'all':
+                keyMap = { ...keyMaps[currentLayout], ...keyMaps.numbers, ...keyMaps.punctuation };
+                break;
         }
 
-        const pressedChar = currentKey
-        const targetChar = trainingData.targetChar.toLowerCase()
+        const pressedChar = currentKey;
+        const targetChar = trainingData.targetChar.toLowerCase();
 
-        elements.keyboardInputField.value = pressedChar.toUpperCase()
-        elements.errorMessage.style.display = 'none'
-        elements.errorMessage.textContent = ''
-        elements.feedback.className = 'feedback'
+        let normalizedPressedChar = pressedChar;
+        if (pressedChar === '?' || pressedChar === '!' || pressedChar === '.' || 
+            pressedChar === ',' || pressedChar === '-' || pressedChar === '(' ||
+            pressedChar === ')' || pressedChar === ':' || pressedChar === ';' ||
+            pressedChar === '/' || pressedChar === '=' || pressedChar === '&' ||
+            pressedChar === '@' || pressedChar === '"' || pressedChar === "'") {
+            normalizedPressedChar = pressedChar;
+        }
 
-        if (pressedChar === targetChar) {
-            elements.feedback.textContent = `✓ Правильно! Введено: ${pressedChar.toUpperCase()}`
-            elements.feedback.classList.add('correct')
+        elements.keyboardInputField.value = normalizedPressedChar.toUpperCase();
+        elements.errorMessage.style.display = 'none';
+        elements.errorMessage.textContent = '';
+        elements.feedback.className = 'feedback';
 
-            trainingData.correct++
-            trainingData.streak++
+        if (normalizedPressedChar === targetChar) {
+            elements.feedback.textContent = `✓ Правильно! Введено: ${normalizedPressedChar.toUpperCase()}`;
+            elements.feedback.classList.add('correct');
+
+            trainingData.correct++;
+            trainingData.streak++;
 
             if (trainingData.streak > trainingData.bestStreak) {
-                trainingData.bestStreak = trainingData.streak
+                trainingData.bestStreak = trainingData.streak;
             }
 
             setTimeout(() => {
-                elements.keyboardInputField.value = ''
-                nextRound()
-            }, 1000)
+                elements.keyboardInputField.value = '';
+                nextRound();
+            }, 1000);
         } else {
-            elements.feedback.textContent = ''
-            elements.errorMessage.textContent = `✗ Ошибка!`
-            elements.errorMessage.style.display = 'block'
+            elements.feedback.textContent = '';
+            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${targetChar.toUpperCase()}`;
+            elements.errorMessage.style.display = 'block';
 
-            trainingData.errors++
-            trainingData.streak = 0
+            trainingData.errors++;
+            trainingData.streak = 0;
 
             setTimeout(() => {
-                elements.keyboardInputField.value = ''
-                elements.errorMessage.style.display = 'none'
-                clearTypedChar()
-                skipRound()
-            }, 2000)
+                elements.keyboardInputField.value = '';
+                elements.errorMessage.style.display = 'none';
+                clearTypedChar();
+                skipRound();
+            }, 2000);
         }
 
-        updateStats()
-        currentKey = ''
+        updateStats();
+        currentKey = '';
     }
 
     function skipRound() {
@@ -470,8 +524,34 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!trainingActive || currentMode !== 'morse' || !morseSymbol) return;
         
         const table = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const numberTable = morseTables.other;
-        const fullTable = {...table, ...numberTable};
+        const numberTable = morseTables.numbers;
+        const punctuationTable = morseTables.punctuation;
+        let fullTable = {};
+        
+        switch(symbolMode) {
+            case 'letters':
+                fullTable = table;
+                break;
+            case 'numbers':
+                fullTable = numberTable;
+                break;
+            case 'letters_numbers':
+                fullTable = {...table, ...numberTable};
+                break;
+            case 'punctuation':
+                fullTable = punctuationTable;
+                break;
+            case 'punctuation_numbers':
+                fullTable = {...punctuationTable, ...numberTable};
+                break;
+            case 'punctuation_letters':
+                fullTable = {...punctuationTable, ...table};
+                break;
+            case 'all':
+                fullTable = {...table, ...numberTable, ...punctuationTable};
+                break;
+        }
+        
         const decodedChar = fullTable[morseSymbol];
         
         elements.errorMessage.style.display = 'none';
@@ -574,7 +654,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let availableSymbols = [];
         
         const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
-        const numberTable = morseTables.other;
+        const numberTable = morseTables.numbers;
+        const punctuationTable = morseTables.punctuation;
+        
+        const isEnglish = currentLayout === 'en';
         
         switch(symbolMode) {
             case 'letters':
@@ -593,6 +676,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 const numbers = Object.values(numberTable)
                     .filter(c => c.length === 1 && c.match(/[0-9]/));
                 availableSymbols = [...letters, ...numbers];
+                break;
+                
+            case 'punctuation':
+                if (isEnglish) {
+                    availableSymbols = Object.values(punctuationTable)
+                        .filter(c => c.length === 1);
+                } else {
+                    availableSymbols = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
+                }
+                break;
+                
+            case 'punctuation_numbers':
+                if (isEnglish) {
+                    const punctuation = Object.values(punctuationTable)
+                        .filter(c => c.length === 1);
+                    const numbers = Object.values(numberTable)
+                        .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    availableSymbols = [...punctuation, ...numbers];
+                } else {
+                    const letters = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
+                    const numbers = Object.values(numberTable)
+                        .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    availableSymbols = [...letters, ...numbers];
+                }
+                break;
+                
+            case 'punctuation_letters':
+                if (isEnglish) {
+                    const punctuation = Object.values(punctuationTable)
+                        .filter(c => c.length === 1);
+                    const letters = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[a-z]/i));
+                    availableSymbols = [...punctuation, ...letters];
+                } else {
+                    availableSymbols = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
+                }
+                break;
+                
+            case 'all':
+                if (isEnglish) {
+                    const letters = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[a-z]/i));
+                    const numbers = Object.values(numberTable)
+                        .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    const punctuation = Object.values(punctuationTable)
+                        .filter(c => c.length === 1);
+                    availableSymbols = [...letters, ...numbers, ...punctuation];
+                } else {
+                    const letters = Object.values(letterTable)
+                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
+                    const numbers = Object.values(numberTable)
+                        .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    availableSymbols = [...letters, ...numbers];
+                }
                 break;
         }
         
