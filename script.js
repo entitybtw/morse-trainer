@@ -32,8 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         playerNameInput: document.getElementById('player-name'),
         saveNameBtn: document.getElementById('save-name-btn'),
         cancelNameBtn: document.getElementById('cancel-name-btn'),
-        keyboardInputField: document.getElementById('keyboard-input-field'),
-        checkBtn: document.getElementById('check-btn')
+        keyboardInputField: document.getElementById('keyboard-input-field')
     };
 
     let currentMode = 'keyboard';
@@ -292,23 +291,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        elements.checkBtn.addEventListener('click', () => {
+        elements.keyboardInputField.addEventListener('input', function(e) {
             if (!trainingActive || currentMode !== 'keyboard') return;
-            checkKeyboardAnswer();
+            
+            let value = e.target.value;
+            
+            if (value.length > 0) {
+                currentKey = value.toLowerCase().charAt(0);
+                
+                setTimeout(() => {
+                    checkKeyboardAnswer();
+                }, 300);
+            }
         });
 
-        elements.keyboardInputField.addEventListener('keydown', (e) => {
+        elements.keyboardInputField.addEventListener('keydown', function(e) {
             if (!trainingActive || currentMode !== 'keyboard') return;
             
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                checkKeyboardAnswer();
-            }
-            
-            if (e.target.value.length === 0 && /^[a-zA-Zа-яА-Я0-9]$/.test(e.key)) {
-                setTimeout(() => {
-                    e.target.value = e.target.value.toUpperCase();
-                }, 0);
+            if (e.key === 'Backspace') {
+                this.value = '';
+                currentKey = '';
             }
         });
 
@@ -393,48 +395,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function checkKeyboardAnswer() {
-        const inputValue = elements.keyboardInputField.value.trim();
-        
-        if (!inputValue || !trainingActive) {
-            elements.feedback.textContent = 'Введите символ';
-            elements.feedback.className = 'feedback';
-            return;
+        if (!currentKey || !trainingActive) return;
+
+        let keyMap = {}
+
+        if (symbolMode === 'letters') {
+            keyMap = keyMaps[currentLayout]
+        } else if (symbolMode === 'numbers') {
+            keyMap = keyMaps.other
+        } else if (symbolMode === 'letters_numbers') {
+            keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
         }
 
-        const pressedChar = inputValue.toLowerCase();
-        const targetChar = trainingData.targetChar.toLowerCase();
+        const pressedChar = currentKey
+        const targetChar = trainingData.targetChar.toLowerCase()
 
-        elements.keyboardInputField.value = '';
-        elements.errorMessage.style.display = 'none';
-        elements.feedback.className = 'feedback';
+        elements.keyboardInputField.value = pressedChar.toUpperCase()
+        elements.errorMessage.style.display = 'none'
+        elements.errorMessage.textContent = ''
+        elements.feedback.className = 'feedback'
 
         if (pressedChar === targetChar) {
-            elements.feedback.textContent = `✓ Правильно! Вы ввели: ${inputValue}`;
-            elements.feedback.classList.add('correct');
+            elements.feedback.textContent = `✓ Правильно! Введено: ${pressedChar.toUpperCase()}`
+            elements.feedback.classList.add('correct')
 
-            trainingData.correct++;
-            trainingData.streak++;
+            trainingData.correct++
+            trainingData.streak++
 
             if (trainingData.streak > trainingData.bestStreak) {
-                trainingData.bestStreak = trainingData.streak;
+                trainingData.bestStreak = trainingData.streak
             }
 
             setTimeout(() => {
-                nextRound();
-            }, 1000);
+                elements.keyboardInputField.value = ''
+                nextRound()
+            }, 1000)
         } else {
-            elements.feedback.textContent = `✗ Ошибка! Вы ввели: ${inputValue}`;
-            elements.feedback.classList.add('error');
+            elements.feedback.textContent = ''
+            elements.errorMessage.textContent = `✗ Ошибка! Нужно было: ${targetChar.toUpperCase()}`
+            elements.errorMessage.style.display = 'block'
 
-            trainingData.errors++;
-            trainingData.streak = 0;
+            trainingData.errors++
+            trainingData.streak = 0
 
             setTimeout(() => {
-                skipRound();
-            }, 2000);
+                elements.keyboardInputField.value = ''
+                elements.errorMessage.style.display = 'none'
+                clearTypedChar()
+                skipRound()
+            }, 2000)
         }
 
-        updateStats();
+        updateStats()
+        currentKey = ''
     }
 
     function skipRound() {
@@ -445,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTargetChar();
             clearTypedChar();
             clearMorseInput();
-            elements.feedback.textContent = 'Введите следующую букву';
+            elements.feedback.textContent = 'Введите следующий символ';
             elements.feedback.className = 'feedback';
             elements.keyboardInputField.focus();
         } else {
@@ -543,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         elements.startBtn.textContent = '🔄 Перезапустить';
         elements.feedback.className = 'feedback';
-        elements.feedback.textContent = 'Введите букву и нажмите "Проверить"';
+        elements.feedback.textContent = 'Введите символ в текстовое поле';
         
         elements.errorMessage.style.display = 'none';
         
@@ -598,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateHint() {
         if (currentMode === 'keyboard') {
-            elements.hint.textContent = 'Введите букву в текстовое поле';
+            elements.hint.textContent = 'Введите символ в текстовое поле';
         } else {
             elements.hint.textContent = 'Введите код Морзе (точки и тире)';
         }
@@ -612,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTargetChar();
             clearTypedChar();
             clearMorseInput();
-            elements.feedback.textContent = 'Введите следующую букву';
+            elements.feedback.textContent = 'Введите следующий символ';
             elements.feedback.className = 'feedback';
             elements.keyboardInputField.focus();
         } else {
