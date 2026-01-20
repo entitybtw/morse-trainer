@@ -195,24 +195,6 @@ h1 {
     box-shadow: 0 0 0 3px rgba(123, 63, 228, 0.1);
 }
 
-.check-btn {
-    padding: 0 24px;
-    background: var(--accent);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 120px;
-}
-
-.check-btn:hover {
-    background: var(--accent-dark);
-    transform: translateY(-2px);
-}
-
 .keyboard-hint {
     text-align: center;
     padding: 16px;
@@ -943,15 +925,6 @@ select:focus {
     
     .mode-buttons {
         flex-direction: column;
-    }
-    
-    .keyboard-input-wrapper {
-        flex-direction: column;
-    }
-    
-    .check-btn {
-        width: 100%;
-        padding: 12px;
     }
     
     .records-tabs {
