@@ -170,12 +170,19 @@
                 </div>
 
                 <div class="input-section" id="keyboard-input">
-                    <div class="input-status">
-                        <div class="status-label">Ваш ввод:</div>
-                        <div id="typed-char" class="typed-char">—</div>
+                    <div class="keyboard-input-wrapper">
+                        <input type="text" 
+                               id="keyboard-input-field" 
+                               placeholder="Введите букву..."
+                               maxlength="1"
+                               autocomplete="off"
+                               autocapitalize="off"
+                               autocorrect="off"
+                               spellcheck="false">
+                        <button id="check-btn" class="check-btn">✓ Проверить</button>
                     </div>
                     <div class="keyboard-hint">
-                        Наберите символ
+                        Введите одну букву и нажмите "Проверить"
                     </div>
                 </div>
 

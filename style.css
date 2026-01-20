@@ -169,31 +169,48 @@ h1 {
     padding: 20px;
 }
 
-.input-status {
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.status-label {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.typed-char {
-    font-size: 48px;
-    font-weight: 600;
-    color: var(--text);
-    min-height: 56px;
+.keyboard-input-wrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
+    gap: 12px;
+    margin: 16px 0;
 }
 
-.typed-char.error {
-    color: var(--error) !important;
+#keyboard-input-field {
+    flex: 1;
+    padding: 16px;
+    font-size: 24px;
+    font-weight: 600;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    text-align: center;
+    outline: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+#keyboard-input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(123, 63, 228, 0.1);
+}
+
+.check-btn {
+    padding: 0 24px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.check-btn:hover {
+    background: var(--accent-dark);
+    transform: translateY(-2px);
 }
 
 .keyboard-hint {
@@ -926,6 +943,15 @@ select:focus {
     
     .mode-buttons {
         flex-direction: column;
+    }
+    
+    .keyboard-input-wrapper {
+        flex-direction: column;
+    }
+    
+    .check-btn {
+        width: 100%;
+        padding: 12px;
     }
     
     .records-tabs {

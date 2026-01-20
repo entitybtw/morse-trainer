@@ -31,7 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
         nameModal: document.getElementById('name-modal'),
         playerNameInput: document.getElementById('player-name'),
         saveNameBtn: document.getElementById('save-name-btn'),
-        cancelNameBtn: document.getElementById('cancel-name-btn')
+        cancelNameBtn: document.getElementById('cancel-name-btn'),
+        keyboardInputField: document.getElementById('keyboard-input-field'),
+        checkBtn: document.getElementById('check-btn')
     };
 
     let currentMode = 'keyboard';
@@ -273,19 +275,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (currentMode === 'keyboard') {
                     elements.keyboardInput.style.display = 'block';
                     elements.morseInput.style.display = 'none';
-                    elements.hint.textContent = 'Наберите соответствующий символ';
+                    elements.hint.textContent = 'Введите символ в текстовое поле';
                     clearMorseInput();
+                    setTimeout(() => elements.keyboardInputField.focus(), 100);
                 } else {
                     elements.keyboardInput.style.display = 'none';
                     elements.morseInput.style.display = 'block';
                     elements.hint.textContent = 'Введите код Морзе';
                     clearTypedChar();
+                    setTimeout(() => elements.morseText.focus(), 100);
                 }
                 
                 if (trainingActive) {
                     updateHint();
                 }
             });
+        });
+
+        elements.checkBtn.addEventListener('click', () => {
+            if (!trainingActive || currentMode !== 'keyboard') return;
+            checkKeyboardAnswer();
+        });
+
+        elements.keyboardInputField.addEventListener('keydown', (e) => {
+            if (!trainingActive || currentMode !== 'keyboard') return;
+            
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                checkKeyboardAnswer();
+            }
+            
+            if (e.target.value.length === 0 && /^[a-zA-Zа-яА-Я0-9]$/.test(e.key)) {
+                setTimeout(() => {
+                    e.target.value = e.target.value.toUpperCase();
+                }, 0);
+            }
         });
 
         elements.recordTabs.forEach(tab => {
@@ -360,8 +384,6 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.toggleRef.textContent = 
                 elements.refContent.classList.contains('visible') ? 'Скрыть' : 'Показать';
         });
-
-        document.addEventListener('keydown', handleKeyPress);
     }
 
     function showNameModal() {
@@ -370,89 +392,50 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.playerNameInput.focus();
     }
 
-function handleKeyPress(e) {
-    if (!trainingActive || currentMode !== 'keyboard') return
-    if (e.ctrlKey || e.altKey || e.metaKey) return
-
-    const key = e.key.toLowerCase()
-    let keyMap = {}
-
-    if (symbolMode === 'letters') {
-        keyMap = keyMaps[currentLayout]
-    } else if (symbolMode === 'numbers') {
-        keyMap = keyMaps.other
-    } else if (symbolMode === 'letters_numbers') {
-        keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
-    }
-
-    if (keyMap[key]) {
-        e.preventDefault()
-        currentKey = key
-        elements.typedChar.textContent = key.toUpperCase()
-        elements.typedChar.classList.remove('error')
-        trainingData.typedChars++
-
-        setTimeout(() => {
-            checkKeyboardAnswer()
-        }, 100)
-    }
-}
-
-function checkKeyboardAnswer() {
-    if (!currentKey || !trainingActive) return
-
-    let keyMap = {}
-
-    if (symbolMode === 'letters') {
-        keyMap = keyMaps[currentLayout]
-    } else if (symbolMode === 'numbers') {
-        keyMap = keyMaps.other
-    } else if (symbolMode === 'letters_numbers') {
-        keyMap = { ...keyMaps[currentLayout], ...keyMaps.other }
-    }
-
-    const pressedChar = keyMap[currentKey]
-    const targetChar = trainingData.targetChar.toLowerCase()
-
-    elements.errorMessage.style.display = 'none'
-    elements.errorMessage.textContent = ''
-    elements.feedback.className = 'feedback'
-
-    if (pressedChar === targetChar) {
-        elements.feedback.textContent = `✓ Правильно! Нажали: ${currentKey.toUpperCase()}`
-        elements.feedback.classList.add('correct')
-
-        trainingData.correct++
-        trainingData.correctChars++
-        trainingData.streak++
-
-        if (trainingData.streak > trainingData.bestStreak) {
-            trainingData.bestStreak = trainingData.streak
+    function checkKeyboardAnswer() {
+        const inputValue = elements.keyboardInputField.value.trim();
+        
+        if (!inputValue || !trainingActive) {
+            elements.feedback.textContent = 'Введите символ';
+            elements.feedback.className = 'feedback';
+            return;
         }
 
-        setTimeout(() => {
-            nextRound()
-        }, 1000)
-    } else {
-        elements.feedback.textContent = ''
-        elements.errorMessage.textContent = `✗ Ошибка!`
-        elements.errorMessage.style.display = 'block'
+        const pressedChar = inputValue.toLowerCase();
+        const targetChar = trainingData.targetChar.toLowerCase();
 
-        elements.typedChar.classList.add('error')
+        elements.keyboardInputField.value = '';
+        elements.errorMessage.style.display = 'none';
+        elements.feedback.className = 'feedback';
 
-        trainingData.errors++
-        trainingData.streak = 0
+        if (pressedChar === targetChar) {
+            elements.feedback.textContent = `✓ Правильно! Вы ввели: ${inputValue}`;
+            elements.feedback.classList.add('correct');
 
-        setTimeout(() => {
-            elements.errorMessage.style.display = 'none'
-            clearTypedChar()
-            skipRound()
-        }, 2000)
+            trainingData.correct++;
+            trainingData.streak++;
+
+            if (trainingData.streak > trainingData.bestStreak) {
+                trainingData.bestStreak = trainingData.streak;
+            }
+
+            setTimeout(() => {
+                nextRound();
+            }, 1000);
+        } else {
+            elements.feedback.textContent = `✗ Ошибка! Вы ввели: ${inputValue}`;
+            elements.feedback.classList.add('error');
+
+            trainingData.errors++;
+            trainingData.streak = 0;
+
+            setTimeout(() => {
+                skipRound();
+            }, 2000);
+        }
+
+        updateStats();
     }
-
-    updateStats()
-    currentKey = ''
-}
 
     function skipRound() {
         trainingData.currentRound++;
@@ -462,13 +445,9 @@ function checkKeyboardAnswer() {
             updateTargetChar();
             clearTypedChar();
             clearMorseInput();
-            elements.feedback.textContent = currentMode === 'keyboard' ? 
-                'Нажмите следующий символ' : 'Введите следующий код';
+            elements.feedback.textContent = 'Введите следующую букву';
             elements.feedback.className = 'feedback';
-            
-            if (currentMode === 'morse') {
-                elements.morseText.focus();
-            }
+            elements.keyboardInputField.focus();
         } else {
             finishTraining();
         }
@@ -536,8 +515,7 @@ function checkKeyboardAnswer() {
 
     function clearTypedChar() {
         currentKey = '';
-        elements.typedChar.textContent = '—';
-        elements.typedChar.classList.remove('error');
+        elements.keyboardInputField.value = '';
         elements.errorMessage.style.display = 'none';
     }
 
@@ -565,16 +543,11 @@ function checkKeyboardAnswer() {
         
         elements.startBtn.textContent = '🔄 Перезапустить';
         elements.feedback.className = 'feedback';
-        elements.feedback.textContent = currentMode === 'keyboard' ? 
-            'Наберите символ' : 'Введите код Морзе';
+        elements.feedback.textContent = 'Введите букву и нажмите "Проверить"';
         
         elements.errorMessage.style.display = 'none';
         
-        updateHint();
-        
-        if (currentMode === 'morse') {
-            elements.morseText.focus();
-        }
+        elements.keyboardInputField.focus();
     }
 
     function restartTraining() {
@@ -625,7 +598,7 @@ function checkKeyboardAnswer() {
 
     function updateHint() {
         if (currentMode === 'keyboard') {
-            elements.hint.textContent = 'Нажмите соответствующий символ';
+            elements.hint.textContent = 'Введите букву в текстовое поле';
         } else {
             elements.hint.textContent = 'Введите код Морзе (точки и тире)';
         }
@@ -639,13 +612,9 @@ function checkKeyboardAnswer() {
             updateTargetChar();
             clearTypedChar();
             clearMorseInput();
-            elements.feedback.textContent = currentMode === 'keyboard' ? 
-                'Нажмите следующий символ' : 'Введите следующий код';
+            elements.feedback.textContent = 'Введите следующую букву';
             elements.feedback.className = 'feedback';
-            
-            if (currentMode === 'morse') {
-                elements.morseText.focus();
-            }
+            elements.keyboardInputField.focus();
         } else {
             finishTraining();
         }
