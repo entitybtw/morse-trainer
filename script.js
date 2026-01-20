@@ -432,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000)
         } else {
             elements.feedback.textContent = ''
-            elements.errorMessage.textContent = `✗ Ошибка! Нужно было: ${targetChar.toUpperCase()}`
+            elements.errorMessage.textContent = `✗ Ошибка!`
             elements.errorMessage.style.display = 'block'
 
             trainingData.errors++
