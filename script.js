@@ -426,11 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const isEnglish = currentLayout === 'en';
             const punctuationOptions = ['punctuation', 'punctuation_numbers', 'punctuation_letters', 'all'];
             
-            if (!isEnglish && punctuationOptions.includes(newSymbolMode)) {
-                alert('Режимы с знаками препинания доступны только для английской раскладки!');
-                elements.symbolModeSelect.value = symbolMode;
-                return;
-            }
             
             symbolMode = newSymbolMode;
             updateReference();
