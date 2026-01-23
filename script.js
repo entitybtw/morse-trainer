@@ -121,7 +121,31 @@ document.addEventListener('DOMContentLoaded', function() {
             ".-..-.": "'", "-.--.": "(", "-.--.-": ")", 
             "...-..-": ":", "...-.-": ";", "..-.-.": "/", 
             "-...-": "=", ".-...": "&", "...-.": "@"
+        },
+        punctuationRu: {
+            ".-.-.-": ".", "--..--": ",", "..--..": "?", "-.-.--": "!", 
+            ".----.": "'", "-....-": "-", ".-..-.": "\"", "-.--.": "(",
+            "-.--.-": ")", "...-..-": ":", "...-.-": ";", "..-.-.": "/",
+            "-...-": "=", ".-...": "&", "...-.": "@"
         }
+    };
+
+    const russianPunctuationCodes = {
+        "ТЧК": ".",        // NXR → ТЧК
+        "ЗПТ": ",",        // PGN → ЗПТ  
+        "ВОПР": "?",       // DJGH → ВОПР
+        "ВОСКЛ": "!",      // DJCRK → ВОСКЛ
+        "КТЧК": "'",       // RDXR → КТЧК
+        "ДЕФ": "-",        // LTA → ДЕФ
+        "АПСН": "\"",      // FGCNH → АПСН
+        "СКО": "(",        // CRJ → СКО
+        "СКЗ": ")",        // CRP → СКЗ
+        "ДВТЧ": ":",       // LDNX → ДВТЧ
+        "ТЗПТ": ";",       // NPGN → ТЗПТ
+        "ДРО<": "/",       // LHJ< → ДРО<
+        "РВН": "=",        // HDY → РВН
+        "И": "&",          // B → И
+        "СО<": "@"         // CJ< → СО<
     };
 
     function init() {
@@ -238,9 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let table = {};
         const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
         const numberTable = morseTables.numbers;
-        const punctuationTable = morseTables.punctuation;
+        const punctuationTable = currentLayout === 'ru' ? morseTables.punctuationRu : morseTables.punctuation;
         
         const isEnglish = currentLayout === 'en';
+        const isRussian = currentLayout === 'ru';
         
         switch(symbolMode) {
             case 'letters':
@@ -253,31 +278,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 table = {...letterTable, ...numberTable};
                 break;
             case 'punctuation':
-                if (isEnglish) {
-                    table = punctuationTable;
-                } else {
-                    table = {};
-                }
+                table = punctuationTable;
                 break;
             case 'punctuation_numbers':
-                if (isEnglish) {
-                    table = {...punctuationTable, ...numberTable};
-                } else {
-                    table = numberTable;
-                }
+                table = {...punctuationTable, ...numberTable};
                 break;
             case 'punctuation_letters':
-                if (isEnglish) {
-                    table = {...punctuationTable, ...letterTable};
-                } else {
-                    table = letterTable;
-                }
+                table = {...punctuationTable, ...letterTable};
                 break;
             case 'all':
                 if (isEnglish) {
                     table = {...letterTable, ...numberTable, ...punctuationTable};
                 } else {
-                    table = {...letterTable, ...numberTable};
+                    table = {...letterTable, ...numberTable, ...punctuationTable};
                 }
                 break;
         }
@@ -285,18 +298,35 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '<div class="ref-grid">';
         
         Object.entries(table).forEach(([code, char]) => {
-            if (char.length === 1) {
+            if (code && char) {
                 const formattedCode = code.split('').join(' ');
-                const displayChar = char === '"' ? '&quot;' : 
-                                   char === '&' ? '&amp;' : 
-                                   char;
+                const displayChar = char.length === 1 ? char.toUpperCase() : char;
                 
-                html += `
-                    <div class="ref-item">
-                        <div class="ref-char">${displayChar.toUpperCase()}</div>
-                        <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
-                    </div>
-                `;
+                if (isRussian && symbolMode.includes('punctuation') && russianPunctuationCodes) {
+                    const rusCode = Object.keys(russianPunctuationCodes).find(key => russianPunctuationCodes[key] === char);
+                    if (rusCode) {
+                        html += `
+                            <div class="ref-item">
+                                <div class="ref-char">${displayChar}</div>
+                                <div class="ref-code">${rusCode}<br>${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="ref-item">
+                                <div class="ref-char">${displayChar}</div>
+                                <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    html += `
+                        <div class="ref-item">
+                            <div class="ref-char">${displayChar}</div>
+                            <div class="ref-code">${formattedCode.replace(/\./g, '•').replace(/-/g, '—')}</div>
+                        </div>
+                    `;
+                }
             }
         });
         
@@ -474,6 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!currentKey || !trainingActive) return;
 
         const isEnglish = currentLayout === 'en';
+        const isRussian = currentLayout === 'ru';
         let expectedChar = trainingData.targetChar.toLowerCase();
         let pressedChar = currentKey.toLowerCase();
 
@@ -503,18 +534,29 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'punctuation':
                 if (isEnglish) {
                     isValidChar = keyMapsPunctuation[pressedChar] !== undefined;
+                } else if (isRussian) {
+                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
+                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
                 }
                 break;
                 
             case 'punctuation_numbers':
                 if (isEnglish) {
                     isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
+                } else if (isRussian) {
+                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
+                                  (keyMapsNumbers[pressedChar] !== undefined) ||
+                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
                 }
                 break;
                 
             case 'punctuation_letters':
                 if (isEnglish) {
                     isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMaps.en[pressedChar] !== undefined);
+                } else if (isRussian) {
+                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
+                                  (keyMaps.ru[pressedChar] !== undefined) ||
+                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
                 }
                 break;
                 
@@ -523,9 +565,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValidChar = (keyMaps.en[pressedChar] !== undefined) || 
                                   (keyMapsNumbers[pressedChar] !== undefined) || 
                                   (keyMapsPunctuation[pressedChar] !== undefined);
-                } else {
+                } else if (isRussian) {
                     isValidChar = (keyMaps.ru[pressedChar] !== undefined) || 
-                                  (keyMapsNumbers[pressedChar] !== undefined);
+                                  (keyMapsNumbers[pressedChar] !== undefined) ||
+                                  Object.values(morseTables.punctuationRu).includes(pressedChar) ||
+                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
                 }
                 break;
         }
@@ -549,7 +593,18 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
 
+        let isCorrect = false;
+        
         if (pressedChar === expectedChar) {
+            isCorrect = true;
+        } else if (isRussian && Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase())) {
+            const decodedChar = russianPunctuationCodes[pressedChar.toUpperCase()];
+            if (decodedChar && decodedChar.toLowerCase() === expectedChar) {
+                isCorrect = true;
+            }
+        }
+
+        if (isCorrect) {
             elements.feedback.textContent = `✓ Правильно! Введено: ${pressedChar.toUpperCase()}`;
             elements.feedback.classList.add('correct');
 
@@ -620,13 +675,15 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'punctuation':
                 if (isEnglish) {
                     fullTable = morseTables.punctuation;
+                } else {
+                    fullTable = morseTables.punctuationRu;
                 }
                 break;
             case 'punctuation_numbers':
                 if (isEnglish) {
                     fullTable = {...morseTables.punctuation, ...morseTables.numbers};
                 } else {
-                    fullTable = morseTables.numbers;
+                    fullTable = {...morseTables.punctuationRu, ...morseTables.numbers};
                 }
                 break;
             case 'punctuation_letters':
@@ -634,14 +691,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const letterTable = morseTables.en;
                     fullTable = {...morseTables.punctuation, ...letterTable};
                 } else {
-                    fullTable = morseTables.ru;
+                    const letterTable = morseTables.ru;
+                    fullTable = {...morseTables.punctuationRu, ...letterTable};
                 }
                 break;
             case 'all':
                 if (isEnglish) {
                     fullTable = {...morseTables.en, ...morseTables.numbers, ...morseTables.punctuation};
                 } else {
-                    fullTable = {...morseTables.ru, ...morseTables.numbers};
+                    fullTable = {...morseTables.ru, ...morseTables.numbers, ...morseTables.punctuationRu};
                 }
                 break;
         }
@@ -747,84 +805,59 @@ document.addEventListener('DOMContentLoaded', function() {
         let availableSymbols = [];
         
         const isEnglish = currentLayout === 'en';
+        const isRussian = currentLayout === 'ru';
         const letterTable = currentLayout === 'ru' ? morseTables.ru : morseTables.en;
         const numberTable = morseTables.numbers;
-        const punctuationTable = morseTables.punctuation;
+        const punctuationTable = isRussian ? morseTables.punctuationRu : morseTables.punctuation;
         
         switch(symbolMode) {
             case 'letters':
                 availableSymbols = Object.values(letterTable)
-                    .filter(c => c.length === 1 && ((isEnglish && c.match(/[a-z]/i)) || (!isEnglish && c.match(/[а-я]/i))));
+                    .filter(c => c.length === 1);
                 break;
                 
             case 'numbers':
                 availableSymbols = Object.values(numberTable)
-                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    .filter(c => c.length === 1);
                 break;
                 
             case 'letters_numbers':
                 const letters = Object.values(letterTable)
-                    .filter(c => c.length === 1 && ((isEnglish && c.match(/[a-z]/i)) || (!isEnglish && c.match(/[а-я]/i))));
+                    .filter(c => c.length === 1);
                 const numbers = Object.values(numberTable)
-                    .filter(c => c.length === 1 && c.match(/[0-9]/));
+                    .filter(c => c.length === 1);
                 availableSymbols = [...letters, ...numbers];
                 break;
                 
             case 'punctuation':
-                if (isEnglish) {
-                    availableSymbols = Object.values(punctuationTable)
-                        .filter(c => c.length === 1);
-                } else {
-                    availableSymbols = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
-                }
+                availableSymbols = Object.values(punctuationTable)
+                    .filter(c => c.length === 1);
                 break;
                 
             case 'punctuation_numbers':
-                if (isEnglish) {
-                    const punctuation = Object.values(punctuationTable)
-                        .filter(c => c.length === 1);
-                    const numbers = Object.values(numberTable)
-                        .filter(c => c.length === 1 && c.match(/[0-9]/));
-                    availableSymbols = [...punctuation, ...numbers];
-                } else {
-                    const letters = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
-                    const numbers = Object.values(numberTable)
-                        .filter(c => c.length === 1 && c.match(/[0-9]/));
-                    availableSymbols = [...letters, ...numbers];
-                }
+                const punctuation = Object.values(punctuationTable)
+                    .filter(c => c.length === 1);
+                const nums = Object.values(numberTable)
+                    .filter(c => c.length === 1);
+                availableSymbols = [...punctuation, ...nums];
                 break;
                 
             case 'punctuation_letters':
-                if (isEnglish) {
-                    const punctuation = Object.values(punctuationTable)
-                        .filter(c => c.length === 1);
-                    const letters = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[a-z]/i));
-                    availableSymbols = [...punctuation, ...letters];
-                } else {
-                    availableSymbols = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
-                }
+                const punct = Object.values(punctuationTable)
+                    .filter(c => c.length === 1);
+                const lets = Object.values(letterTable)
+                    .filter(c => c.length === 1);
+                availableSymbols = [...punct, ...lets];
                 break;
                 
             case 'all':
-                if (isEnglish) {
-                    const letters = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[a-z]/i));
-                    const numbers = Object.values(numberTable)
-                        .filter(c => c.length === 1 && c.match(/[0-9]/));
-                    const punctuation = Object.values(punctuationTable)
-                        .filter(c => c.length === 1);
-                    availableSymbols = [...letters, ...numbers, ...punctuation];
-                } else {
-                    const letters = Object.values(letterTable)
-                        .filter(c => c.length === 1 && c.match(/[а-я]/i));
-                    const numbers = Object.values(numberTable)
-                        .filter(c => c.length === 1 && c.match(/[0-9]/));
-                    availableSymbols = [...letters, ...numbers];
-                }
+                const allPunct = Object.values(punctuationTable)
+                    .filter(c => c.length === 1);
+                const allLets = Object.values(letterTable)
+                    .filter(c => c.length === 1);
+                const allNums = Object.values(numberTable)
+                    .filter(c => c.length === 1);
+                availableSymbols = [...allLets, ...allNums, ...allPunct];
                 break;
         }
         
