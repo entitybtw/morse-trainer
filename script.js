@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const keyMapsPunctuation = {
-        ".": ".", ",": ",", "…": "…", "?": "?", "!": "!", 
+        ".": ".", ",": ",", "?": "?", "!": "!", 
         "\"": "\"", "-": "-", "'": "'", "(": "(", ")": ")", 
         ":": ":", ";": ";", "/": "/", "=": "=", "&": "&", "@": "@"
     };
@@ -116,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ".....": "5", "-....": "6", "--...": "7", "---..": "8", "----.": "9"
         },
         punctuation: {
-            ".-.-.-": ".", "--..--": ",", "---...": "…",
-            "..--..": "?", "-.-.--": "!", ".----.": "\"", "-....-": "-", 
+            ".-.-.-": ".", "--..--": ",", "..--..": "?", "-.-.--": "!", 
+            ".----.": "\"", "-....-": "-", 
             ".-..-.": "'", "-.--.": "(", "-.--.-": ")", 
             "...-..-": ":", "...-.-": ";", "..-.-.": "/", 
             "-...-": "=", ".-...": "&", "...-.": "@"
@@ -131,21 +131,21 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const russianPunctuationCodes = {
-        "ТЧК": ".",        // NXR → ТЧК
-        "ЗПТ": ",",        // PGN → ЗПТ  
-        "ВОПР": "?",       // DJGH → ВОПР
-        "ВОСКЛ": "!",      // DJCRK → ВОСКЛ
-        "КТЧК": "'",       // RDXR → КТЧК
-        "ДЕФ": "-",        // LTA → ДЕФ
-        "АПСН": "\"",      // FGCNH → АПСН
-        "СКО": "(",        // CRJ → СКО
-        "СКЗ": ")",        // CRP → СКЗ
-        "ДВТЧ": ":",       // LDNX → ДВТЧ
-        "ТЗПТ": ";",       // NPGN → ТЗПТ
-        "ДРОБ": "/",       // LHJ< → ДРО<
-        "РВН": "=",        // HDY → РВН
-        "И": "&",          // B → И
-        "СОБ": "@"         // CJ< → СО<
+        "ТЧК": ".",        
+        "ЗПТ": ",",       
+        "ВОПР": "?",      
+        "ВОСКЛ": "!",    
+        "КТЧК": "'",      
+        "ДЕФ": "-",        
+        "АПСН": "\"",     
+        "СКО": "(",       
+        "СКЗ": ")",       
+        "ДВТЧ": ":",       
+        "ТЗПТ": ";",      
+        "ДРОБ": "/",     
+        "РВН": "=",        
+        "И": "&",          
+        "СОБ": "@"        
     };
 
     const punctuationCharToCode = {};
@@ -395,9 +395,30 @@ document.addEventListener('DOMContentLoaded', function() {
             if (value.length > 0) {
                 currentKey = value;
                 
-                setTimeout(() => {
-                    checkKeyboardAnswer();
-                }, 300);
+                const isRussian = currentLayout === 'ru';
+                const isPunctuationMode = symbolMode.includes('punctuation') || symbolMode === 'all';
+                
+                if (isRussian && isPunctuationMode && trainingData.targetChar) {
+                    const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(trainingData.targetChar);
+                    if (isPunctuationChar) {
+                        const isValidCode = Object.keys(russianPunctuationCodes).includes(currentKey.toUpperCase());
+                        const expectedCode = punctuationCharToCode[trainingData.targetChar];
+                        
+                        if (currentKey.length >= expectedCode.length) {
+                            setTimeout(() => {
+                                checkKeyboardAnswer();
+                            }, 300);
+                        }
+                    } else {
+                        setTimeout(() => {
+                            checkKeyboardAnswer();
+                        }, 300);
+                    }
+                } else {
+                    setTimeout(() => {
+                        checkKeyboardAnswer();
+                    }, 300);
+                }
             }
         });
 
@@ -440,16 +461,6 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.layoutSelect.addEventListener('change', () => {
             currentLayout = elements.layoutSelect.value;
             
-            const isEnglish = currentLayout === 'en';
-            const punctuationOptions = ['punctuation', 'punctuation_numbers', 'punctuation_letters', 'all'];
-            
-            const currentOption = elements.symbolModeSelect.value;
-            
-            if (!isEnglish && punctuationOptions.includes(currentOption)) {
-                elements.symbolModeSelect.value = 'letters';
-                symbolMode = 'letters';
-            }
-            
             updateReference();
             if (trainingActive) {
                 generateSequence();
@@ -460,10 +471,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         elements.symbolModeSelect.addEventListener('change', () => {
             const newSymbolMode = elements.symbolModeSelect.value;
-            const isEnglish = currentLayout === 'en';
-            const punctuationOptions = ['punctuation', 'punctuation_numbers', 'punctuation_letters', 'all'];
-            
-            
             symbolMode = newSymbolMode;
             updateReference();
             if (trainingActive) {
@@ -550,15 +557,22 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!isValidInput) {
                 elements.feedback.textContent = '';
-                elements.errorMessage.textContent = `Введите русский код (например: ДВТЧ, ЗПТ, ТЧК)`;
+                elements.errorMessage.textContent = `✗ Ошибка!`;
                 elements.errorMessage.style.display = 'block';
-                
+
+                trainingData.errors++;
+                trainingData.streak = 0;
+                trainingData.typedChars++;
+
+                updateStats();
+
                 setTimeout(() => {
                     elements.keyboardInputField.value = '';
                     elements.errorMessage.style.display = 'none';
                     clearTypedChar();
                     currentKey = '';
-                }, 1000);
+                    skipRound();
+                }, 2000);
                 return;
             }
         } else {
@@ -589,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = keyMapsPunctuation[pressedInput] !== undefined;
                     } else if (isRussian) {
-                        isValidInput = false;
+                        isValidInput = keyMapsPunctuation[pressedInput] !== undefined;
                     }
                     break;
                     
@@ -597,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
                     } else if (isRussian) {
-                        isValidInput = (keyMapsNumbers[pressedInput] !== undefined);
+                        isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
                     }
                     break;
                     
@@ -605,7 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMaps.en[pressedInput] !== undefined);
                     } else if (isRussian) {
-                        isValidInput = (keyMaps.ru[pressedInput] !== undefined);
+                        isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMaps.ru[pressedInput] !== undefined);
                     }
                     break;
                     
@@ -616,24 +630,25 @@ document.addEventListener('DOMContentLoaded', function() {
                                       (keyMapsPunctuation[pressedInput] !== undefined);
                     } else if (isRussian) {
                         isValidInput = (keyMaps.ru[pressedInput] !== undefined) || 
-                                      (keyMapsNumbers[pressedInput] !== undefined);
+                                      (keyMapsNumbers[pressedInput] !== undefined) ||
+                                      (keyMapsPunctuation[pressedInput] !== undefined);
                     }
                     break;
             }
-        }
-
-        if (!isValidInput) {
-            elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `Недопустимый ввод для выбранного режима!`;
-            elements.errorMessage.style.display = 'block';
             
-            setTimeout(() => {
-                elements.keyboardInputField.value = '';
-                elements.errorMessage.style.display = 'none';
-                clearTypedChar();
-                currentKey = '';
-            }, 1000);
-            return;
+            if (!isValidInput) {
+                elements.feedback.textContent = '';
+                elements.errorMessage.textContent = `Недопустимый символ для выбранного режима!`;
+                elements.errorMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    elements.keyboardInputField.value = '';
+                    elements.errorMessage.style.display = 'none';
+                    clearTypedChar();
+                    currentKey = '';
+                }, 1000);
+                return;
+            }
         }
 
         elements.keyboardInputField.value = pressedInput;
@@ -649,16 +664,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 isCorrect = true;
             }
         } else {
-            if (pressedInput === expectedChar) {
+            if (pressedInput.toLowerCase() === expectedChar) {
                 isCorrect = true;
             }
         }
+
+        trainingData.typedChars++;
 
         if (isCorrect) {
             elements.feedback.textContent = `✓ Правильно! Введено: ${pressedInput}`;
             elements.feedback.classList.add('correct');
 
             trainingData.correct++;
+            trainingData.correctChars++;
             trainingData.streak++;
 
             if (trainingData.streak > trainingData.bestStreak) {
@@ -676,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${expectedDisplay}`;
+            elements.errorMessage.textContent = `✗ Ошибка!`;
             elements.errorMessage.style.display = 'block';
 
             trainingData.errors++;
@@ -786,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 updateStats();
             } else {
-                elements.feedback.textContent = `✗ Ошибка! Ожидалось: ${trainingData.targetChar.toUpperCase()}`;
+                elements.feedback.textContent = `✗ Ошибка!`;
                 elements.feedback.classList.add('error');
                 
                 trainingData.errors++;
