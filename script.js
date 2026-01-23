@@ -511,20 +511,36 @@ document.addEventListener('DOMContentLoaded', function() {
         const isEnglish = currentLayout === 'en';
         const isRussian = currentLayout === 'ru';
         let expectedChar = trainingData.targetChar.toLowerCase();
-        let pressedInput = currentKey.toLowerCase();
+        let pressedInput = currentKey.toUpperCase();
 
         let isValidInput = false;
-        let isSingleCharMode = true;
+        let isPunctuationMode = false;
         
         if (isRussian && (symbolMode.includes('punctuation') || symbolMode === 'all')) {
-            const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(expectedChar);
+            const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(trainingData.targetChar);
             if (isPunctuationChar) {
-                isSingleCharMode = false;
+                isPunctuationMode = true;
             }
         }
         
-        if (isSingleCharMode) {
-            pressedInput = pressedInput.charAt(0);
+        if (isPunctuationMode) {
+            isValidInput = Object.keys(russianPunctuationCodes).includes(pressedInput);
+            
+            if (!isValidInput) {
+                elements.feedback.textContent = '';
+                elements.errorMessage.textContent = `Введите русский код (например: ДВТЧ, ЗПТ, ТЧК)`;
+                elements.errorMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    elements.keyboardInputField.value = '';
+                    elements.errorMessage.style.display = 'none';
+                    clearTypedChar();
+                    currentKey = '';
+                }, 1000);
+                return;
+            }
+        } else {
+            pressedInput = pressedInput.toLowerCase().charAt(0);
             
             switch(symbolMode) {
                 case 'letters':
@@ -551,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = keyMapsPunctuation[pressedInput] !== undefined;
                     } else if (isRussian) {
-                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput);
+                        isValidInput = false;
                     }
                     break;
                     
@@ -559,8 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
                     } else if (isRussian) {
-                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput) || 
-                                      (keyMapsNumbers[pressedInput] !== undefined);
+                        isValidInput = (keyMapsNumbers[pressedInput] !== undefined);
                     }
                     break;
                     
@@ -568,8 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (isEnglish) {
                         isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMaps.en[pressedInput] !== undefined);
                     } else if (isRussian) {
-                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput) || 
-                                      (keyMaps.ru[pressedInput] !== undefined);
+                        isValidInput = (keyMaps.ru[pressedInput] !== undefined);
                     }
                     break;
                     
@@ -580,14 +594,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                       (keyMapsPunctuation[pressedInput] !== undefined);
                     } else if (isRussian) {
                         isValidInput = (keyMaps.ru[pressedInput] !== undefined) || 
-                                      (keyMapsNumbers[pressedInput] !== undefined) ||
-                                      Object.values(morseTables.punctuationRu).includes(pressedInput);
+                                      (keyMapsNumbers[pressedInput] !== undefined);
                     }
                     break;
             }
-        } else {
-            pressedInput = currentKey.toUpperCase();
-            isValidInput = Object.keys(russianPunctuationCodes).includes(pressedInput);
         }
 
         if (!isValidInput) {
@@ -604,26 +614,26 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        elements.keyboardInputField.value = isSingleCharMode ? pressedInput.toUpperCase() : pressedInput;
+        elements.keyboardInputField.value = pressedInput;
         elements.errorMessage.style.display = 'none';
         elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
 
         let isCorrect = false;
         
-        if (isSingleCharMode) {
-            if (pressedInput === expectedChar) {
+        if (isPunctuationMode) {
+            const decodedChar = russianPunctuationCodes[pressedInput];
+            if (decodedChar && decodedChar.toLowerCase() === expectedChar) {
                 isCorrect = true;
             }
         } else {
-            const decodedChar = russianPunctuationCodes[pressedInput];
-            if (decodedChar && decodedChar.toLowerCase() === expectedChar) {
+            if (pressedInput === expectedChar) {
                 isCorrect = true;
             }
         }
 
         if (isCorrect) {
-            elements.feedback.textContent = `✓ Правильно! Введено: ${isSingleCharMode ? pressedInput.toUpperCase() : pressedInput}`;
+            elements.feedback.textContent = `✓ Правильно! Введено: ${pressedInput}`;
             elements.feedback.classList.add('correct');
 
             trainingData.correct++;
@@ -639,8 +649,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         } else {
             let expectedDisplay = expectedChar.toUpperCase();
-            if (!isSingleCharMode && punctuationCharToCode[trainingData.targetChar]) {
-                expectedDisplay += ` или ${punctuationCharToCode[trainingData.targetChar]}`;
+            if (isPunctuationMode && punctuationCharToCode[trainingData.targetChar]) {
+                expectedDisplay = punctuationCharToCode[trainingData.targetChar];
             }
             
             elements.feedback.textContent = '';
