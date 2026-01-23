@@ -142,10 +142,10 @@ document.addEventListener('DOMContentLoaded', function() {
         "СКЗ": ")",        // CRP → СКЗ
         "ДВТЧ": ":",       // LDNX → ДВТЧ
         "ТЗПТ": ";",       // NPGN → ТЗПТ
-        "ДРО<": "/",       // LHJ< → ДРО<
+        "ДРОБ": "/",       // LHJ< → ДРО<
         "РВН": "=",        // HDY → РВН
         "И": "&",          // B → И
-        "СО<": "@"         // CJ< → СО<
+        "СОБ": "@"         // CJ< → СО<
     };
 
     const punctuationCharToCode = {};
