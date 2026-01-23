@@ -148,6 +148,11 @@ document.addEventListener('DOMContentLoaded', function() {
         "СО<": "@"         // CJ< → СО<
     };
 
+    const punctuationCharToCode = {};
+    Object.entries(russianPunctuationCodes).forEach(([code, char]) => {
+        punctuationCharToCode[char] = code;
+    });
+
     function init() {
         loadRecords();
         loadPlayerName();
@@ -302,8 +307,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formattedCode = code.split('').join(' ');
                 const displayChar = char.length === 1 ? char.toUpperCase() : char;
                 
-                if (isRussian && symbolMode.includes('punctuation') && russianPunctuationCodes) {
-                    const rusCode = Object.keys(russianPunctuationCodes).find(key => russianPunctuationCodes[key] === char);
+                if (isRussian && symbolMode.includes('punctuation') && punctuationCharToCode[char]) {
+                    const rusCode = punctuationCharToCode[char];
                     if (rusCode) {
                         html += `
                             <div class="ref-item">
@@ -387,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let value = e.target.value;
             
             if (value.length > 0) {
-                currentKey = value.charAt(0);
+                currentKey = value;
                 
                 setTimeout(() => {
                     checkKeyboardAnswer();
@@ -506,77 +511,88 @@ document.addEventListener('DOMContentLoaded', function() {
         const isEnglish = currentLayout === 'en';
         const isRussian = currentLayout === 'ru';
         let expectedChar = trainingData.targetChar.toLowerCase();
-        let pressedChar = currentKey.toLowerCase();
+        let pressedInput = currentKey.toLowerCase();
 
-        let isValidChar = false;
+        let isValidInput = false;
+        let isSingleCharMode = true;
         
-        switch(symbolMode) {
-            case 'letters':
-                if (currentLayout === 'en') {
-                    isValidChar = keyMaps.en[pressedChar] !== undefined;
-                } else {
-                    isValidChar = keyMaps.ru[pressedChar] !== undefined;
-                }
-                break;
-                
-            case 'numbers':
-                isValidChar = keyMapsNumbers[pressedChar] !== undefined;
-                break;
-                
-            case 'letters_numbers':
-                if (currentLayout === 'en') {
-                    isValidChar = (keyMaps.en[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
-                } else {
-                    isValidChar = (keyMaps.ru[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
-                }
-                break;
-                
-            case 'punctuation':
-                if (isEnglish) {
-                    isValidChar = keyMapsPunctuation[pressedChar] !== undefined;
-                } else if (isRussian) {
-                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
-                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
-                }
-                break;
-                
-            case 'punctuation_numbers':
-                if (isEnglish) {
-                    isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMapsNumbers[pressedChar] !== undefined);
-                } else if (isRussian) {
-                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
-                                  (keyMapsNumbers[pressedChar] !== undefined) ||
-                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
-                }
-                break;
-                
-            case 'punctuation_letters':
-                if (isEnglish) {
-                    isValidChar = (keyMapsPunctuation[pressedChar] !== undefined) || (keyMaps.en[pressedChar] !== undefined);
-                } else if (isRussian) {
-                    isValidChar = Object.values(morseTables.punctuationRu).includes(pressedChar) || 
-                                  (keyMaps.ru[pressedChar] !== undefined) ||
-                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
-                }
-                break;
-                
-            case 'all':
-                if (isEnglish) {
-                    isValidChar = (keyMaps.en[pressedChar] !== undefined) || 
-                                  (keyMapsNumbers[pressedChar] !== undefined) || 
-                                  (keyMapsPunctuation[pressedChar] !== undefined);
-                } else if (isRussian) {
-                    isValidChar = (keyMaps.ru[pressedChar] !== undefined) || 
-                                  (keyMapsNumbers[pressedChar] !== undefined) ||
-                                  Object.values(morseTables.punctuationRu).includes(pressedChar) ||
-                                  Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase());
-                }
-                break;
+        if (isRussian && (symbolMode.includes('punctuation') || symbolMode === 'all')) {
+            const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(expectedChar);
+            if (isPunctuationChar) {
+                isSingleCharMode = false;
+            }
+        }
+        
+        if (isSingleCharMode) {
+            pressedInput = pressedInput.charAt(0);
+            
+            switch(symbolMode) {
+                case 'letters':
+                    if (currentLayout === 'en') {
+                        isValidInput = keyMaps.en[pressedInput] !== undefined;
+                    } else {
+                        isValidInput = keyMaps.ru[pressedInput] !== undefined;
+                    }
+                    break;
+                    
+                case 'numbers':
+                    isValidInput = keyMapsNumbers[pressedInput] !== undefined;
+                    break;
+                    
+                case 'letters_numbers':
+                    if (currentLayout === 'en') {
+                        isValidInput = (keyMaps.en[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
+                    } else {
+                        isValidInput = (keyMaps.ru[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
+                    }
+                    break;
+                    
+                case 'punctuation':
+                    if (isEnglish) {
+                        isValidInput = keyMapsPunctuation[pressedInput] !== undefined;
+                    } else if (isRussian) {
+                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput);
+                    }
+                    break;
+                    
+                case 'punctuation_numbers':
+                    if (isEnglish) {
+                        isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMapsNumbers[pressedInput] !== undefined);
+                    } else if (isRussian) {
+                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput) || 
+                                      (keyMapsNumbers[pressedInput] !== undefined);
+                    }
+                    break;
+                    
+                case 'punctuation_letters':
+                    if (isEnglish) {
+                        isValidInput = (keyMapsPunctuation[pressedInput] !== undefined) || (keyMaps.en[pressedInput] !== undefined);
+                    } else if (isRussian) {
+                        isValidInput = Object.values(morseTables.punctuationRu).includes(pressedInput) || 
+                                      (keyMaps.ru[pressedInput] !== undefined);
+                    }
+                    break;
+                    
+                case 'all':
+                    if (isEnglish) {
+                        isValidInput = (keyMaps.en[pressedInput] !== undefined) || 
+                                      (keyMapsNumbers[pressedInput] !== undefined) || 
+                                      (keyMapsPunctuation[pressedInput] !== undefined);
+                    } else if (isRussian) {
+                        isValidInput = (keyMaps.ru[pressedInput] !== undefined) || 
+                                      (keyMapsNumbers[pressedInput] !== undefined) ||
+                                      Object.values(morseTables.punctuationRu).includes(pressedInput);
+                    }
+                    break;
+            }
+        } else {
+            pressedInput = currentKey.toUpperCase();
+            isValidInput = Object.keys(russianPunctuationCodes).includes(pressedInput);
         }
 
-        if (!isValidChar) {
+        if (!isValidInput) {
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `Недопустимый символ для выбранного режима!`;
+            elements.errorMessage.textContent = `Недопустимый ввод для выбранного режима!`;
             elements.errorMessage.style.display = 'block';
             
             setTimeout(() => {
@@ -588,24 +604,26 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        elements.keyboardInputField.value = pressedChar.toUpperCase();
+        elements.keyboardInputField.value = isSingleCharMode ? pressedInput.toUpperCase() : pressedInput;
         elements.errorMessage.style.display = 'none';
         elements.errorMessage.textContent = '';
         elements.feedback.className = 'feedback';
 
         let isCorrect = false;
         
-        if (pressedChar === expectedChar) {
-            isCorrect = true;
-        } else if (isRussian && Object.keys(russianPunctuationCodes).includes(pressedChar.toUpperCase())) {
-            const decodedChar = russianPunctuationCodes[pressedChar.toUpperCase()];
+        if (isSingleCharMode) {
+            if (pressedInput === expectedChar) {
+                isCorrect = true;
+            }
+        } else {
+            const decodedChar = russianPunctuationCodes[pressedInput];
             if (decodedChar && decodedChar.toLowerCase() === expectedChar) {
                 isCorrect = true;
             }
         }
 
         if (isCorrect) {
-            elements.feedback.textContent = `✓ Правильно! Введено: ${pressedChar.toUpperCase()}`;
+            elements.feedback.textContent = `✓ Правильно! Введено: ${isSingleCharMode ? pressedInput.toUpperCase() : pressedInput}`;
             elements.feedback.classList.add('correct');
 
             trainingData.correct++;
@@ -620,8 +638,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 nextRound();
             }, 1000);
         } else {
+            let expectedDisplay = expectedChar.toUpperCase();
+            if (!isSingleCharMode && punctuationCharToCode[trainingData.targetChar]) {
+                expectedDisplay += ` или ${punctuationCharToCode[trainingData.targetChar]}`;
+            }
+            
             elements.feedback.textContent = '';
-            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${expectedChar.toUpperCase()}`;
+            elements.errorMessage.textContent = `✗ Ошибка! Ожидалось: ${expectedDisplay}`;
             elements.errorMessage.style.display = 'block';
 
             trainingData.errors++;
