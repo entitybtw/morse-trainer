@@ -371,6 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     elements.morseInput.style.display = 'none';
                     elements.hint.textContent = 'Введите символ в текстовое поле';
                     clearMorseInput();
+                    updateKeyboardInputMaxLength();
                     setTimeout(() => elements.keyboardInputField.focus(), 100);
                 } else {
                     elements.keyboardInput.style.display = 'none';
@@ -453,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (trainingActive) {
                 generateSequence();
                 updateTargetChar();
+                updateKeyboardInputMaxLength();
             }
         });
 
@@ -467,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (trainingActive) {
                 generateSequence();
                 updateTargetChar();
+                updateKeyboardInputMaxLength();
             }
         });
 
@@ -497,6 +500,25 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.toggleRef.textContent = 
                 elements.refContent.classList.contains('visible') ? 'Скрыть' : 'Показать';
         });
+    }
+
+    function updateKeyboardInputMaxLength() {
+        const isRussian = currentLayout === 'ru';
+        const isPunctuationMode = symbolMode.includes('punctuation') || symbolMode === 'all';
+        
+        if (isRussian && isPunctuationMode && trainingData.targetChar) {
+            const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(trainingData.targetChar);
+            if (isPunctuationChar) {
+                elements.keyboardInputField.maxLength = 6;
+                elements.hint.textContent = 'Введите русский код (например: ДВТЧ, ЗПТ, ТЧК)';
+            } else {
+                elements.keyboardInputField.maxLength = 1;
+                elements.hint.textContent = 'Введите символ в текстовое поле';
+            }
+        } else {
+            elements.keyboardInputField.maxLength = 1;
+            elements.hint.textContent = 'Введите символ в текстовое поле';
+        }
     }
 
     function showNameModal() {
@@ -817,6 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTargetChar();
         updateProgress();
         updateStats();
+        updateKeyboardInputMaxLength();
         
         elements.startBtn.textContent = '🔄 Перезапустить';
         elements.feedback.className = 'feedback';
@@ -906,6 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (trainingData.sequence[trainingData.currentRound]) {
             trainingData.targetChar = trainingData.sequence[trainingData.currentRound];
             elements.targetChar.textContent = trainingData.targetChar.toUpperCase();
+            updateKeyboardInputMaxLength();
         }
     }
 
