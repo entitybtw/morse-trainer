@@ -387,40 +387,43 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        elements.keyboardInputField.addEventListener('input', function(e) {
-            if (!trainingActive || currentMode !== 'keyboard') return;
-            
-            let value = e.target.value;
-            
-            if (value.length > 0) {
-                currentKey = value;
+elements.keyboardInputField.addEventListener('input', function(e) {
+    if (!trainingActive || currentMode !== 'keyboard') return;
+    
+    let value = e.target.value;
+    
+    if (value.length > 0) {
+        currentKey = value;
+        
+        const isRussian = currentLayout === 'ru';
+        const isPunctuationMode = symbolMode.includes('punctuation') || symbolMode === 'all';
+        
+        if (isRussian && isPunctuationMode && trainingData.targetChar) {
+            const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(trainingData.targetChar);
+            if (isPunctuationChar) {
+                const expectedCode = punctuationCharToCode[trainingData.targetChar];
                 
-                const isRussian = currentLayout === 'ru';
-                const isPunctuationMode = symbolMode.includes('punctuation') || symbolMode === 'all';
-                
-                if (isRussian && isPunctuationMode && trainingData.targetChar) {
-                    const isPunctuationChar = Object.values(morseTables.punctuationRu).includes(trainingData.targetChar);
-                    if (isPunctuationChar) {
-                        const isValidCode = Object.keys(russianPunctuationCodes).includes(currentKey.toUpperCase());
-                        const expectedCode = punctuationCharToCode[trainingData.targetChar];
-                        
-                        if (currentKey.length >= expectedCode.length) {
-                            setTimeout(() => {
-                                checkKeyboardAnswer();
-                            }, 300);
-                        }
-                    } else {
-                        setTimeout(() => {
-                            checkKeyboardAnswer();
-                        }, 300);
-                    }
-                } else {
+                if (currentKey.length === expectedCode.length) {
                     setTimeout(() => {
                         checkKeyboardAnswer();
                     }, 300);
                 }
+                else if (currentKey.length > 0) {
+                    elements.feedback.textContent = `Вводите код: ${expectedCode}`;
+                    elements.feedback.className = 'feedback';
+                }
+            } else {
+                setTimeout(() => {
+                    checkKeyboardAnswer();
+                }, 300);
             }
-        });
+        } else {
+            setTimeout(() => {
+                checkKeyboardAnswer();
+            }, 300);
+        }
+    }
+});
 
         elements.keyboardInputField.addEventListener('keydown', function(e) {
             if (!trainingActive || currentMode !== 'keyboard') return;
