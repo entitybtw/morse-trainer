@@ -425,14 +425,23 @@ elements.keyboardInputField.addEventListener('input', function(e) {
     }
 });
 
-        elements.keyboardInputField.addEventListener('keydown', function(e) {
-            if (!trainingActive || currentMode !== 'keyboard') return;
-            
-            if (e.key === 'Backspace') {
-                this.value = '';
-                currentKey = '';
-            }
-        });
+elements.keyboardInputField.addEventListener('keydown', function(e) {
+    if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        return;
+    }
+    
+    if (!trainingActive || currentMode !== 'keyboard') return;
+    
+    if (e.key === 'Backspace') {
+        this.value = '';
+        currentKey = '';
+    }
+    
+    if (e.key === 'Enter') {
+        checkKeyboardAnswer();
+    }
+});
 
         elements.recordTabs.forEach(tab => {
             tab.addEventListener('click', () => {
