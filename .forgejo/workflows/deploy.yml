@@ -13,4 +13,4 @@ jobs:
       - name: Deploy
         run: |
           rsync -a --delete --exclude='.git' ./ /var/www/morse-trainer/
-          deploy add morse-trainer /var/www/morse-trainer
+          deploy add morse-trainer /var/www/morse-trainer --port 8085
