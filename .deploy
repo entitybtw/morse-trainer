@@ -1,0 +1,5 @@
+# deploy-stack: параметры деплоя для этого репозитория.
+# Можно ничего не писать в workflow — deploy прочитает этот файл.
+NAME=morse-trainer
+PORT=8085
+TYPE=static
